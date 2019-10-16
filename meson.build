@@ -8,10 +8,10 @@ project(
   ],
 )
 
-add_global_arguments(['g'], language : 'cpp')
+add_global_arguments(['-g'], language : 'cpp')
 add_project_arguments(['-Wall', '-Wextra', '-Wno-missing-braces'], language : 'cpp')
 
-libcppevents_include_path = include_directories('include')
+cppevents_include_path = include_directories('include')
 
 subdir ('src')
 subdir ('tests')

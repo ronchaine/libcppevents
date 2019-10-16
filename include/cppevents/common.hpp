@@ -1,5 +1,7 @@
-#ifndef LIBCPPEVENT_EVENTS_HPP
-#define LIBCPPEVENT_EVENTS_HPP
+#ifndef LIBCPPEVENT_COMMON_HPP
+#define LIBCPPEVENT_COMMON_HPP
+
+#include <cstdint>
 
 namespace cppevents
 {

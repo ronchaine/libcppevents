@@ -8,10 +8,9 @@ namespace cppevents
     class filesystem_event : public event
     {
         public:
-            std::string file;
+            filesystem_event() : event(event_id) {}
 
-        private:
-            event_typeid;
+            static inline event_typeid event_id = type_id_for<filesystem_event>();
     };
 }
 
