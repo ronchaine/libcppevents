@@ -1,0 +1,19 @@
+project(
+  'cppevents',
+  'cpp',
+  default_options : [
+      'cpp_std=c++2a',
+      'buildtype=release',
+      'default_library=static'
+  ],
+)
+
+add_global_arguments(['g'], language : 'cpp')
+add_project_arguments(['-Wall', '-Wextra', '-Wno-missing-braces'], language : 'cpp')
+
+libcppevents_include_path = include_directories('include')
+
+subdir ('src')
+subdir ('tests')
+subdir ('examples')
+
