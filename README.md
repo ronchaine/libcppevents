@@ -1,6 +1,6 @@
 # libcppevents - a generic event system for cpp
 
-epoll / timerfd / eventfd / inotify / kqueue for cpp
+epoll / timerfd / eventfd / inotify / kqueue / whatever for cpp
 
 Current support
 
@@ -12,5 +12,5 @@ Current support
         - [ ] inotify
     - [ ] BSD
         - [ ] kqueue
-
-
+    - [ ] Windows
+        - [ ] ?????????
