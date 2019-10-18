@@ -12,6 +12,9 @@ namespace cppevents
 
             static inline event_typeid event_id = type_id_for<filesystem_event>();
     };
+
+    error_code add_watch(event_queue&, const char* path);
+    error_code remove_watch(event_queue&, const char* path);
 }
 
 #endif

@@ -4,4 +4,7 @@
 
 namespace cppevents
 {
+    class event_source<filesystem_event>
+    {
+    };
 }
