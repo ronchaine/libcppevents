@@ -4,13 +4,15 @@ epoll / timerfd / eventfd / inotify / kqueue for cpp
 
 Current support
 
-    - [ ] Linux
-        - [ ] epoll
-        - [ ] timerfd
-        - [ ] eventfd
-        - [ ] signalfd
-        - [ ] inotify
-    - [ ] BSD
-        - [ ] kqueue
-
+    - [ ] Event type system
+    - [ ] Feature support
+        - [ ] Linux
+            - [ ] epoll
+            - [ ] timerfd
+            - [ ] eventfd
+            - [ ] signalfd
+        - [ ] BSD
+            - [ ] kqueue
+        - [ ] Windows
+            - [ ] ???????
 

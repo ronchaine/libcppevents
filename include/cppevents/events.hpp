@@ -45,6 +45,9 @@ namespace cppevents
             template <typename T>
             void on_event(std::function<void(event)>);
 
+            void wait();
+            void poll();
+
         private:
             std::vector<std::function<void(event)>> callbacks;
     };
