@@ -12,14 +12,6 @@
 
 #include "common.hpp"
 
-#define CPPEV_DECLARE_EVENT(x) public:    \
-                                  x();    \
-                                  ~x();   \
-                                  static inline event_typeid event_id = type_id_for<x>(); \
-                               private:   \
-                                  class implementation; \
-                                  std::experimental::propagate_const<std::unique_ptr<implementation>> impl;
-
 namespace cppevents::detail
 {
     inline std::atomic<event_typeid> event_typeid_counter = 0;
@@ -61,6 +53,8 @@ namespace cppevents
     class event_queue
     {
         public:
+            constexpr static event_typeid NO_EVENTS = 0;
+
             template <typename T, typename... Others>
             void on_event(event_callback_type);
 
@@ -68,8 +62,7 @@ namespace cppevents
             void poll();
 
         private:
-//            event_typeid listening_event_types = NO_EVENTS;
-
+            event_typeid listening_event_types = NO_EVENTS;
             std::unordered_map<event_typeid, event_callback_type> callbacks;
     };
 
