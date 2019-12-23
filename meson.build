@@ -8,12 +8,14 @@ project(
   ],
 )
 
-add_global_arguments(['-g'], language : 'cpp')
+#add_global_arguments(['-g'], language : 'cpp')
 add_project_arguments(['-Wall', '-Wextra', '-Wno-missing-braces'], language : 'cpp')
 
 cppevents_include_path = include_directories('include')
 
 subdir ('src')
-subdir ('tests')
-subdir ('examples')
 
+if meson.is_subproject() == false
+  subdir ('tests')
+  subdir ('examples')
+endif

@@ -3,6 +3,7 @@
 
 int main()
 {
+/*
     cppevents::filesystem_event ev;
 
     std::cout << ev.type() << "\n";
@@ -16,4 +17,5 @@ int main()
     {
         cppevents::filesystem_event& ev_from_ptr = *static_cast<cppevents::filesystem_event*>(events[0]);
     }
+*/
 }

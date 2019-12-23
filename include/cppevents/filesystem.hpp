@@ -10,15 +10,23 @@ namespace cppevents
         public:
             filesystem_event();
             ~filesystem_event();
-            static inline event_typeid event_id = type_id_for<x>();
+
+            static filesystem_event translate(std::vector<uint8_t>& data);
 
         private:
             class implementation;
             std::experimental::propagate_const<std::unique_ptr<implementation>> impl;
     };
-
-    error_code add_filesystem_watch(const char* path, event_queue&);
-    error_code remove_filesystem_watch(const char* path, event_queue&);
+    
+    /**
+     * Add filesystem watch
+     *
+     * \param   path_name   filesystem path to monitor
+     * \param   queue       event queue to report to
+     *
+     * \returns error code depicting either success or reason for failure
+     */
+    error_code watch_path(const std::string& path_name, event_queue& queue = default_queue);
 }
 
 #endif

@@ -1,5 +1,7 @@
 cppevents_lib_sources = [
-    'filesystem-linux.cpp'
+    'filesystem-linux.cpp',
+    'network-linux.cpp',
+    'event_queue-linux.cpp'
 ]
 
 cppevents_lib = library(

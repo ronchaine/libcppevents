@@ -6,7 +6,21 @@
 namespace cppevents
 {
     using event_typeid = uint64_t;
-    using error_code = int32_t;
+
+    constexpr static int UNINITIALISED_FILE_DESCRIPTOR  = -2;
+
+    template <typename T>
+    class badge
+    {
+        friend T;
+        badge() {}
+    };
+
+    enum class error_code : int32_t
+    {
+        success         = 0,
+        system_error    = 1
+    };
 }
 
 #endif
