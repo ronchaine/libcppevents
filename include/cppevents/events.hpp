@@ -12,12 +12,10 @@
 #include <memory>
 
 #include "common.hpp"
+#include "event.hpp"
 
 namespace cppevents
 {
-    namespace detail { inline std::atomic<event_typeid> event_typeid_counter = 0; }
-
-    class event;
     class event_queue;
 
     using event_callback_type = std::function<void(event&)>;
@@ -28,32 +26,6 @@ namespace cppevents
     // file descriptor for POSIX
     using native_source_type = int;
     using translator_type = event(*)(native_source_type);
-
-    class event
-    {
-        public:
-            event_typeid type() const noexcept { return id; }
-
-        protected:
-            explicit event(event_typeid id) noexcept : id(id) {}
-
-            std::array<std::byte, 16> data;
-
-        private:
-            event_typeid id;
-    };
-
-    template <typename T, typename... Ts>
-    event_typeid get_event_id_for()
-    {
-        static_assert(std::is_base_of<event, typename std::decay<T>::type>::value);
-        static event_typeid ids = 1ul << detail::event_typeid_counter++;
-
-        if constexpr(sizeof...(Ts))
-            return ids | get_event_id_for<Ts...>();
-
-        return ids;
-    }
 
     // event queue is what we report our events to
     class event_queue
