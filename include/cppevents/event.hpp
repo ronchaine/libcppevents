@@ -41,7 +41,7 @@ namespace cppevents
     template <typename T, typename... Ts>
     event_typeid get_event_id_for()
     {
-        static_assert(std::is_same_v<std::decay<T>, T>);
+        static_assert(std::is_same_v<std::decay_t<T>, T>);
         assert(detail::event_typeid_counter < 64);
         //static_assert(std::is_base_of<event, typename std::decay<T>::type>::value);
         static event_typeid ids = 1ul << detail::event_typeid_counter++;
@@ -80,6 +80,8 @@ namespace cppevents
 
             template <typename T> friend struct detail::internal_event_handler;
             template <typename T> friend struct detail::external_event_handler;
+
+            template <typename T> friend T event_cast(event& ev);
 
             template <typename T>
             using preferred_handler = typename std::conditional<use_small_object_optimisation<T>::value,
@@ -170,6 +172,7 @@ namespace cppevents
         {
             dest.storage.ptr = ::new T(std::forward<Arguments>(args)...);
             dest.handler = &external_event_handler::handle;
+            dest.id = get_event_id_for<T>();
             return *static_cast<T*>(dest.storage.ptr);
         }
 
@@ -183,6 +186,7 @@ namespace cppevents
         {
             dest.storage.ptr = self.storage.ptr;
             dest.handler = &external_event_handler::handle;
+            dest.id = self.id;
             self.handler = nullptr;
         }
 
@@ -193,6 +197,17 @@ namespace cppevents
             return nullptr;
         }
     };
+
+    template <typename T>
+    T event_cast(event& ev)
+    {
+        using raw_type = typename std::remove_cvref<T>::type;
+
+        raw_type* ptr = reinterpret_cast<raw_type*>(event::preferred_handler<raw_type>::handle(detail::handler_action::get, &ev, nullptr));
+        assert(ptr != nullptr);
+
+        return *ptr;
+    }
 }
 
 #endif

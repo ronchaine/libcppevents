@@ -53,7 +53,7 @@ namespace cppevents
     inline event_queue default_queue;
 
     template <typename Source, typename T>
-    error_code add_source(const T&, event_queue& = default_queue);
+    error_code add_source(T&, event_queue& = default_queue);
 
     template <typename... Types>
     void on_event(event_callback_type callback, event_queue& = default_queue)

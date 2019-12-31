@@ -9,10 +9,21 @@ namespace cppevents
 {
     struct network_event
     {
-        /*
-        static const inline event_typeid event_id = get_event_id_for<network_event>();
-        network_event() : event(event_id) {}
-        */
+        // POSIX
+        using native_socket_type = int;
+        // winsock
+        // using native_socket_type = SOCKET;
+
+        enum subtype {
+            new_connection,
+            socket_ready
+        };
+
+        subtype type;
+
+        std::string peer_address;
+
+        native_socket_type sock_handle = -1;
     };
 
     struct socket_listener

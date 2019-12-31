@@ -99,9 +99,7 @@ namespace cppevents
             event ev = event_translators[native_event[i].data.fd](native_event[i].data.fd);
 
             for (auto& callback : events[ev.type()])
-            {
                 callback(ev);
-            }
         }
     }
 
