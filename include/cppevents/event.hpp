@@ -41,7 +41,9 @@ namespace cppevents
     template <typename T, typename... Ts>
     event_typeid get_event_id_for()
     {
+        static_assert(!std::is_same_v<event, T>);
         static_assert(std::is_same_v<std::decay_t<T>, T>);
+        static_assert(std::is_same_v<typename std::remove_cvref<T>::type, T>);
         assert(detail::event_typeid_counter < 64);
         static event_typeid ids = 1ul << detail::event_typeid_counter++;
 
@@ -72,6 +74,14 @@ namespace cppevents
             }
 
             event_typeid type() const noexcept { return id; }
+
+            event& operator=(event&& other) noexcept
+            {
+                if (other.handler != nullptr)
+                    other.handler(detail::handler_action::move, &other, this);
+                id = other.id;
+                return *this;
+            }
 
         private:
             template <typename T> using use_small_object_optimisation =
@@ -111,6 +121,15 @@ namespace cppevents
             return *rval;
         }
 
+        template <typename... Arguments>
+        static T& create_noid(event& dest, Arguments&&... args)
+        {
+            T* rval = new (&dest.storage.data) T(std::forward<Arguments>(args)...);
+            dest.handler = &internal_event_handler::handle;
+            return *rval;
+        }
+
+
         static void destroy(event& self)
         {
             T& val = *static_cast<T*>(static_cast<void*>(&self.storage.data));
@@ -120,7 +139,8 @@ namespace cppevents
 
         static void move(event& self, event& dest)
         {
-            create(dest, std::move(*static_cast<T*>(static_cast<void*>(&self.storage.data))));
+            create_noid(dest, std::move(*static_cast<T*>(static_cast<void*>(&self.storage.data))));
+            dest.id = self.id;
             destroy(self);
         }
 

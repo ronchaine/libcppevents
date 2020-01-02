@@ -1,12 +1,13 @@
 #include <cppevents/events.hpp>
 
 #include <unordered_map>
+#include <queue>
 #include <deque>
 
 #include <sys/epoll.h>
-#include <unistd.h>
+#include <sys/eventfd.h>
 
-#include <iostream>
+#include <unistd.h>
 
 namespace cppevents
 {
@@ -24,15 +25,18 @@ namespace cppevents
             error_code add_native_source(native_source_type fd, translator_type func);
             void remove_native_source(native_source_type fd);
 
+            error_code send_event(event_typeid, event);
+
         private:
             std::unordered_map<event_typeid, std::deque<event_callback_type>> events;
 
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
 
-            int epoll_fd = -1;
+            std::queue<event> sent_events;
 
-            bool has_events = false;
+            int epoll_fd = -1;
+            int notify_fd = -1;
     };
 
     // event_queue forwarders
@@ -44,6 +48,7 @@ namespace cppevents
     error_code event_queue::add_native_source(native_source_type evdesc, translator_type func) { return impl->add_native_source(evdesc, func); }
     void event_queue::remove_native_source(native_source_type evdesc) { return impl->remove_native_source(evdesc); }
 
+    error_code event_queue::send_event(event_typeid type, event ev) { return impl->send_event(type, std::move(ev)); }
 
     // Actual implementation
     event_queue::event_queue() : impl(std::make_unique<implementation>()) {}
@@ -52,6 +57,16 @@ namespace cppevents
     event_queue::implementation::implementation()
     {
         epoll_fd = epoll_create1(0);
+
+        // used for messages with no real OS notification
+        notify_fd = eventfd(0, 0);
+
+        epoll_event ev{};
+        ev.data.fd = notify_fd;
+        ev.events = EPOLLIN;
+
+        if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, notify_fd, &ev) == -1)
+            ;
     }
 
     event_queue::implementation::~implementation()
@@ -76,9 +91,6 @@ namespace cppevents
      */
     void event_queue::implementation::wait(std::chrono::milliseconds timeout)
     {
-        if (!has_events)
-            return;
-
         constexpr static int max_events = 16;
         int event_count = 0;
 
@@ -91,6 +103,17 @@ namespace cppevents
 
         for (int i = 0; i < event_count; ++i)
         {
+            if (native_event[i].data.fd == notify_fd)
+            {
+                event ev = std::move(sent_events.front());
+                sent_events.pop();
+                eventfd_t val;
+                eventfd_read(notify_fd, &val);
+                for (auto& callback : events[ev.type()])
+                    callback(ev);
+                continue;
+            }
+
             if (event_translators.count(native_event[i].data.fd) == 0)
                 continue;
             if (event_translators[native_event[i].data.fd] == nullptr)
@@ -110,15 +133,22 @@ namespace cppevents
     {
     }
 
+    error_code event_queue::implementation::send_event(event_typeid type, event ev)
+    {
+        (void)type;
+
+        sent_events.push(std::move(ev));
+        eventfd_write(notify_fd, 1);
+
+        return error_code::success;
+    }
+
     /**
      * Add a file description to the epoll queue
      */
     error_code event_queue::implementation::add_native_source(native_source_type fd, translator_type func)
     {
-        has_events = true;
-
-        epoll_event ev;
-        memset(&ev, 0, sizeof(ev));
+        epoll_event ev{};
 
         ev.events = EPOLLIN;
         ev.data.fd = fd;
@@ -136,7 +166,5 @@ namespace cppevents
     void event_queue::implementation::remove_native_source(native_source_type fd)
     {
         event_translators.erase(fd);
-        if (event_translators.empty())
-            has_events = false;
     }
 }

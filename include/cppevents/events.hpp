@@ -45,6 +45,10 @@ namespace cppevents
             error_code add_native_source(native_source_type, translator_type);
             void remove_native_source(native_source_type);
 
+            template <typename EventType>
+            error_code send_event(EventType ev) { return send_event(get_event_id_for<EventType>(), ev); }
+            error_code send_event(event_typeid, event);
+
         private:
             class implementation;
             std::experimental::propagate_const<std::unique_ptr<implementation>> impl;
@@ -65,6 +69,12 @@ namespace cppevents
 
     inline void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(-1)) { default_queue.wait(timeout); }
     inline void poll() { default_queue.poll(); }
+
+    template <typename EventType>
+    error_code send_event(EventType ev) { return default_queue.send_event(get_event_id_for<EventType>(), std::move(ev)); }
+
+    inline error_code send_event(event&& ev) { return default_queue.send_event(ev.type(), std::move(ev)); }
+    inline error_code send_event(event_typeid type, event ev) { return default_queue.send_event(type, std::move(ev)); }
 }
 
 #endif
