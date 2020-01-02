@@ -43,7 +43,6 @@ namespace cppevents
     {
         static_assert(std::is_same_v<std::decay_t<T>, T>);
         assert(detail::event_typeid_counter < 64);
-        //static_assert(std::is_base_of<event, typename std::decay<T>::type>::value);
         static event_typeid ids = 1ul << detail::event_typeid_counter++;
 
         if constexpr(sizeof...(Ts))

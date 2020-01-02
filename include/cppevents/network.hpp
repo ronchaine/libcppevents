@@ -9,19 +9,23 @@ namespace cppevents
 {
     struct network_event
     {
+        #if defined (_WIN32)
+        using native_socket_type = SOCKET;
+        #else
         // POSIX
         using native_socket_type = int;
-        // winsock
-        // using native_socket_type = SOCKET;
+        #endif
 
         enum subtype {
             new_connection,
-            socket_ready
+            socket_ready,
+            connection_closed
         };
 
         subtype type;
 
         std::string peer_address;
+        uint16_t    peer_port = 0;
 
         native_socket_type sock_handle = -1;
     };
