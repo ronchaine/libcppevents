@@ -59,6 +59,9 @@ namespace cppevents
     template <typename Source, typename T>
     error_code add_source(T&, event_queue& = default_queue);
 
+    template <typename Source, typename T> requires std::is_fundamental<T>::value
+    error_code add_source(T, event_queue& = default_queue);
+
     template <typename... Types>
     void on_event(event_callback_type callback, event_queue& = default_queue)
     {
