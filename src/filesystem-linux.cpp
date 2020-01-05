@@ -30,6 +30,7 @@ namespace cppevents
             close(notifier.descriptor);
     }
 
+    /*
     error_code watch_path(const std::string& path, event_queue& queue)
     {
         // handle this locally
@@ -43,4 +44,5 @@ namespace cppevents
 
         return error_code::success;
     }
+    */
 }

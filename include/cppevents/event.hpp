@@ -15,7 +15,7 @@ namespace cppevents
 
     namespace detail
     {
-        using data_buffer_type = std::aligned_storage<2 * sizeof(void*), std::alignment_of<void*>::value>;
+        using data_buffer_type = std::aligned_storage<3 * sizeof(void*), std::alignment_of<void*>::value>;
 
         inline std::atomic<event_typeid> event_typeid_counter = 0;
 

@@ -16,7 +16,7 @@ namespace cppevents
         using native_socket_type = int;
         #endif
 
-        enum subtype {
+        enum subtype : unsigned int {
             new_connection,
             socket_ready,
             connection_closed
@@ -30,15 +30,8 @@ namespace cppevents
         native_socket_type sock_handle = -1;
     };
 
-    struct socket_listener
-    {
-        using event_type = network_event;
-    };
-
-    struct socket_io_event
-    {
-        using event_type = network_event;
-    };
+    struct socket_listener { using event_type = network_event; };
+    struct socket_io_event { using event_type = network_event; };
 }
 
 #endif

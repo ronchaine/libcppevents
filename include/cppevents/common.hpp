@@ -19,7 +19,8 @@ namespace cppevents
     enum class error_code : int32_t
     {
         success         = 0,
-        system_error    = 1
+        system_error    = 1,
+        already_exists  = 2,
     };
 }
 
