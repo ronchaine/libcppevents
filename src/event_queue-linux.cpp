@@ -22,7 +22,7 @@ namespace cppevents
             void wait(std::chrono::milliseconds timeout);
             void poll();
 
-            error_code add_native_source(native_source_type fd, translator_type func);
+            error_code add_native_source(native_source_type fd, translator_type func, destructor_type);
             void remove_native_source(native_source_type fd);
 
             error_code send_event(event_typeid, event);
@@ -32,6 +32,7 @@ namespace cppevents
 
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
+            std::unordered_map<int, destructor_type> event_destructors;
 
             std::queue<event> sent_events;
 
@@ -45,7 +46,8 @@ namespace cppevents
     void event_queue::wait(std::chrono::milliseconds timeout) { impl->wait(timeout); }
     void event_queue::poll() { impl->poll(); }
 
-    error_code event_queue::add_native_source(native_source_type evdesc, translator_type func) { return impl->add_native_source(evdesc, func); }
+    error_code event_queue::add_native_source(native_source_type evdesc, translator_type func, destructor_type rfunc)
+    { return impl->add_native_source(evdesc, func, rfunc); }
     void event_queue::remove_native_source(native_source_type evdesc) { return impl->remove_native_source(evdesc); }
 
     error_code event_queue::send_event(event_typeid type, event ev) { return impl->send_event(type, std::move(ev)); }
@@ -146,7 +148,9 @@ namespace cppevents
     /**
      * Add a file description to the epoll queue
      */
-    error_code event_queue::implementation::add_native_source(native_source_type fd, translator_type func)
+    error_code event_queue::implementation::add_native_source(native_source_type fd,
+                                                              translator_type func,
+                                                              destructor_type rfunc)
     {
         epoll_event ev{};
 
@@ -157,6 +161,8 @@ namespace cppevents
             return error_code::system_error;
 
         event_translators[fd] = func;
+        event_destructors[fd] = rfunc;
+
         return error_code::success;
     }
 

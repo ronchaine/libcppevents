@@ -26,6 +26,7 @@ namespace cppevents
     // file descriptor for POSIX
     using native_source_type = int;
     using translator_type = event(*)(native_source_type);
+    using destructor_type = void(*)(native_source_type);
 
     // event queue is what we report our events to
     class event_queue
@@ -42,7 +43,7 @@ namespace cppevents
             void poll();
 
             // This is needed only for adding new events
-            error_code add_native_source(native_source_type, translator_type);
+            error_code add_native_source(native_source_type, translator_type, destructor_type = nullptr);
             void remove_native_source(native_source_type);
 
             template <typename EventType>
