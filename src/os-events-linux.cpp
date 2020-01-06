@@ -32,7 +32,22 @@ namespace cppevents
         return std::move(ev);
     }
 
-    error_code os_handle_signal(event_queue& queue, int signal)
+    void delete_signal_event(int fd)
+    {
+        (void) fd;
+
+        // unblock everything
+        sigset_t mask;
+        sigprocmask(SIG_BLOCK, nullptr, &mask);
+        sigprocmask(SIG_UNBLOCK, &mask, nullptr);
+
+        close(signal_fd);
+        signal_fd = -1;
+    }
+
+    template <> error_code add_source<cppevents::signal, int>(
+        int signal,
+        event_queue& queue)
     {
         sigset_t mask;
         sigprocmask(SIG_BLOCK, nullptr, &mask);
@@ -40,9 +55,9 @@ namespace cppevents
         if (sigismember(&mask, signal))
             return error_code::already_exists;
 
-        // block the signal from the default handling
         sigaddset(&mask, signal);
 
+        // block the signal from the default handling
         if (sigprocmask(SIG_BLOCK, &mask, nullptr) == -1)
             return error_code::system_error;
 
@@ -59,7 +74,7 @@ namespace cppevents
         if (signal_fd == -1)
             return error_code::system_error;
 
-        queue.add_native_source(signal_fd, create_signal_event);
+        queue.add_native_source(signal_fd, create_signal_event, delete_signal_event);
 
         return error_code::success;
     }

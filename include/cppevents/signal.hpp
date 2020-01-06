@@ -15,15 +15,6 @@ namespace cppevents
     };
 
     struct signal { using event_type = signal_event; };
-
-    error_code os_handle_signal(event_queue&, int);
-
-    template <> error_code add_source<cppevents::signal, int>(
-        int signal,
-        event_queue& queue)
-    {
-        return cppevents::os_handle_signal(queue, signal);
-    }
 }
 
 #endif
