@@ -23,6 +23,7 @@ namespace cppevents
             void poll();
 
             error_code add_native_source(native_source_type fd, translator_type func, destructor_type);
+            error_code add_edge_triggered_native_source(native_source_type fd, translator_type func, destructor_type);
             void remove_native_source(native_source_type fd);
 
             error_code send_event(event_typeid, event);
@@ -47,6 +48,8 @@ namespace cppevents
     void event_queue::poll() { impl->poll(); }
 
     error_code event_queue::add_native_source(native_source_type evdesc, translator_type func, destructor_type rfunc)
+    { return impl->add_native_source(evdesc, func, rfunc); }
+    error_code event_queue::add_edge_triggered_native_source(native_source_type evdesc, translator_type func, destructor_type rfunc)
     { return impl->add_native_source(evdesc, func, rfunc); }
     void event_queue::remove_native_source(native_source_type evdesc) { return impl->remove_native_source(evdesc); }
 
@@ -133,6 +136,7 @@ namespace cppevents
      */
     void event_queue::implementation::poll()
     {
+        // FIXME: implementation
     }
 
     error_code event_queue::implementation::send_event(event_typeid type, event ev)
@@ -155,6 +159,24 @@ namespace cppevents
         epoll_event ev{};
 
         ev.events = EPOLLIN;
+        ev.data.fd = fd;
+
+        if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev))
+            return error_code::system_error;
+
+        event_translators[fd] = func;
+        event_destructors[fd] = rfunc;
+
+        return error_code::success;
+    }
+
+    error_code event_queue::implementation::add_edge_triggered_native_source(native_source_type fd,
+                                                                             translator_type func,
+                                                                             destructor_type rfunc)
+    {
+        epoll_event ev{};
+
+        ev.events = EPOLLIN | EPOLLET;
         ev.data.fd = fd;
 
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev))

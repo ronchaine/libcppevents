@@ -44,6 +44,7 @@ namespace cppevents
 
             // This is needed only for adding new events
             error_code add_native_source(native_source_type, translator_type, destructor_type = nullptr);
+            error_code add_edge_triggered_native_source(native_source_type, translator_type, destructor_type = nullptr);
             void remove_native_source(native_source_type);
 
             template <typename EventType>
@@ -60,7 +61,7 @@ namespace cppevents
     template <typename Source, typename T>
     error_code add_source(T&, event_queue& = default_queue);
 
-    template <typename Source, typename T> requires std::is_fundamental<T>::value
+    template <typename Source, typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
     error_code add_source(T, event_queue& = default_queue);
 
     template <typename... Types>
