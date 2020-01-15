@@ -36,7 +36,12 @@ namespace cppevents
             ~event_queue();
 
             template <typename T, typename... Others>
-            void on_event(event_callback_type callback) { on_event(get_event_id_for<T>() | get_event_id_for<Others...>(), callback); }
+            void on_event(event_callback_type callback)
+            {
+                on_event(get_event_id_for<T>(), callback);
+                if constexpr (sizeof...(Others) > 0)
+                    on_event<Others...>(callback);
+            }
             void on_event(event_typeid, event_callback_type);
 
             void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(-1));
@@ -67,7 +72,7 @@ namespace cppevents
     template <typename... Types>
     void on_event(event_callback_type callback, event_queue& = default_queue)
     {
-        default_queue.on_event(get_event_id_for<Types...>(), callback);
+        default_queue.on_event<Types...>(callback);
     }
 
     inline void on_event(event_typeid eid, event_callback_type ect) { default_queue.on_event(eid, ect); }

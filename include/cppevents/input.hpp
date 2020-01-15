@@ -17,23 +17,26 @@ namespace cppevents
         scancode scancode;
     };
 
-    struct mouse_event
+    struct mouse_button
     {
         enum subtype : unsigned int {
             button_down,
             button_up,
-            motion,
-            wheel,
-            click,
         };
 
         subtype type;
-
-//        uint32_t button;
-//        uint32_t 
+        uint32_t click_count = 0;
     };
 
-    struct touch_event
+    struct mouse_motion
+    {
+    };
+
+    struct mouse_wheel
+    {
+    };
+
+    struct touch
     {
         enum subtype : unsigned int {
             motion,

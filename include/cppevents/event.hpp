@@ -38,17 +38,13 @@ namespace cppevents
         using handler_ptr = void* (*)(handler_action, event const*, event*);
     }
 
-    template <typename T, typename... Ts>
+    template <typename T>
     event_typeid get_event_id_for()
     {
         static_assert(!std::is_same_v<event, T>);
         static_assert(std::is_same_v<std::decay_t<T>, T>);
         static_assert(std::is_same_v<typename std::remove_cvref<T>::type, T>);
-        assert(detail::event_typeid_counter < 64);
-        static event_typeid ids = 1ul << detail::event_typeid_counter++;
-
-        if constexpr(sizeof...(Ts))
-            return ids | get_event_id_for<Ts...>();
+        static event_typeid ids = detail::event_typeid_counter++;
 
         return ids;
     }

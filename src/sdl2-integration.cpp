@@ -34,6 +34,8 @@ namespace cppevents::detail
                     std::cerr << "ERROR: unhandled key: " << sdl_event.key.keysym.scancode << "\n";
                 }
                 return std::move(event);
+            case SDL_MOUSEMOTION:
+                return mouse_motion{};
             default:
                 break;
         }
