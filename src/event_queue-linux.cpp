@@ -9,6 +9,8 @@
 
 #include <unistd.h>
 
+#include <iostream>
+
 namespace cppevents
 {
     class event_queue::implementation
@@ -34,8 +36,6 @@ namespace cppevents
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
             std::unordered_map<int, destructor_type> event_destructors;
-
-            std::queue<event> sent_events;
 
             int epoll_fd = -1;
             int notify_fd = -1;
@@ -109,16 +109,7 @@ namespace cppevents
         for (int i = 0; i < event_count; ++i)
         {
             if (native_event[i].data.fd == notify_fd)
-            {
-                event ev = std::move(sent_events.front());
-                sent_events.pop();
-                eventfd_t val;
-                eventfd_read(notify_fd, &val);
-                for (auto& callback : events[ev.type()])
-                    callback(ev);
                 continue;
-            }
-
             if (event_translators.count(native_event[i].data.fd) == 0)
                 continue;
             if (event_translators[native_event[i].data.fd] == nullptr)
@@ -139,13 +130,16 @@ namespace cppevents
         // FIXME: implementation
     }
 
+    /**
+     * Handle sent event directly
+     */
     error_code event_queue::implementation::send_event(event_typeid type, event ev)
     {
         (void)type;
+        for (auto& callback : events[ev.type()])
+            callback(ev);
 
-        sent_events.push(std::move(ev));
         eventfd_write(notify_fd, 1);
-
         return error_code::success;
     }
 

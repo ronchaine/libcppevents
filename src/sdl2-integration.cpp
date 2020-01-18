@@ -9,37 +9,68 @@ namespace cppevents::detail
 {
     struct empty_event{};
 
-    window_event translate_sdl_window_event(SDL_Event& ev)
+    void translate_sdl_window_event(SDL_Event& ev)
     {
         (void)ev;
-        return window_event{};
     }
 
-    event translate_sdl_input_event(SDL_Event& sdl_event)
+    void translate_sdl_input_event(SDL_Event& sdl_event)
     {
         switch (sdl_event.type)
         {
             case SDL_KEYDOWN:
             case SDL_KEYUP:
-                keyboard_event event;
-                event.type = sdl_event.type == SDL_KEYDOWN ? keyboard_event::key_down : keyboard_event::key_up;
-                if (sdl_event.key.keysym.scancode <= 0xE7)
-                {
-                    event.scancode = static_cast<scancode>(sdl_event.key.keysym.scancode);
-                } else {
-                    event.scancode = scancode::key_none;
+                { // make this different scope
+                    keyboard_event event;
+                    event.type = sdl_event.type == SDL_KEYDOWN ? keyboard_event::key_down : keyboard_event::key_up;
+                    if (sdl_event.key.keysym.scancode <= 0xE7)
+                    {
+                        event.scancode = static_cast<scancode>(sdl_event.key.keysym.scancode);
+                    } else {
+                        event.scancode = scancode::key_none;
+                    }
+                    if (event.scancode == scancode::key_none)
+                    {
+                        std::cerr << "ERROR: unhandled key: " << sdl_event.key.keysym.scancode << "\n";
+                    }
+                    send_event(event);
+                    return;
                 }
-                if (event.scancode == scancode::key_none)
-                {
-                    std::cerr << "ERROR: unhandled key: " << sdl_event.key.keysym.scancode << "\n";
-                }
-                return std::move(event);
             case SDL_MOUSEMOTION:
-                return mouse_motion{};
+                {
+                    mouse_motion event;
+                    event.mouse_instance = sdl_event.motion.which;
+                    event.x_pixels = sdl_event.motion.x;
+                    event.y_pixels = sdl_event.motion.y;
+                    event.x_relative = sdl_event.motion.xrel;
+                    event.y_relative = sdl_event.motion.yrel;
+                    send_event(event);
+                    return;
+                }
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONUP:
+                {
+                    mouse_button event;
+                    event.type = sdl_event.type == SDL_MOUSEBUTTONDOWN ? mouse_button::button_down : mouse_button::button_up;
+                    event.mouse_instance = sdl_event.button.which;
+                    event.button = sdl_event.button.button;
+                    event.click_count = sdl_event.button.clicks;
+                    event.x_pixels = sdl_event.button.x;
+                    event.y_pixels = sdl_event.button.y;
+                    send_event(event);
+                    return;
+                }
+            case SDL_FINGERMOTION:
+            case SDL_FINGERDOWN:
+            case SDL_FINGERUP:
+                {
+                    touch event;
+                    send_event(event);
+                    return;
+                }
             default:
                 break;
         }
-        return empty_event{};
     }
 
     event create_sdl_window_event(native_source_type fd)
@@ -52,7 +83,8 @@ namespace cppevents::detail
             switch (ev.type)
             {
                 case SDL_WINDOWEVENT:
-                    return translate_sdl_window_event(ev);
+                    translate_sdl_window_event(ev);
+                    continue;
                 case SDL_CONTROLLERAXISMOTION:
                 case SDL_CONTROLLERBUTTONDOWN:
                 case SDL_CONTROLLERBUTTONUP:
@@ -76,19 +108,20 @@ namespace cppevents::detail
                 case SDL_MOUSEBUTTONUP:
                 case SDL_MOUSEWHEEL:
                 case SDL_MULTIGESTURE:
-                    return translate_sdl_input_event(ev);
-
+                    translate_sdl_input_event(ev);
+                    continue;
                 // TODO: Support IME
                 case SDL_TEXTINPUT:
                 case SDL_TEXTEDITING:
-                    return empty_event{};
+                    std::cout << "sdl text input\n";
+                    continue;
                 default:
                     std::cerr << "ERROR: unhandled SDL event type " << ev.type << "\n";
                     continue;
             }
         }
 
-        return window_event{};
+        return empty_event{};
     }
 }
 
