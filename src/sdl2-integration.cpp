@@ -1,3 +1,16 @@
+/*!
+ *  \file       sdl2-integration.cpp
+ *  \brief      SDL2 integration for libcppevents
+ *  \author     Jari Ronkainen
+ *  \version    0.7.0
+ *
+ *  Implementations to turn SDL2 events into libcppevents events
+ *
+ *  \todo Windows support
+ *  \todo Cocoa support
+ *  \todo Text input support
+ */
+
 #include <cppevents/sdl2.hpp>
 #include <unordered_map>
 
@@ -7,13 +20,23 @@
 
 namespace cppevents::detail
 {
-    struct empty_event{};
-
+    /*!
+     *  \brief  Convert an SDL_Event to cppevents window event
+     *
+     *  Takes in a SDL_Event and translates it to cppevents
+     *  window event, and sends it to concerned entities
+     */
     void translate_sdl_window_event(SDL_Event& ev)
     {
         (void)ev;
     }
 
+    /*!
+     *  \brief  Convert an SDL_Event to cppevents input event
+     *
+     *  Takes in a SDL_Event and translates it to cppevents
+     *  input event, and sends it to concerned entities
+     */
     void translate_sdl_input_event(SDL_Event& sdl_event)
     {
         switch (sdl_event.type)
@@ -73,6 +96,16 @@ namespace cppevents::detail
         }
     }
 
+    /*!
+     *  \brief  callback for SDL events
+     *  \return empty event
+     *
+     *  The callback handles forwarding the event itself, and
+     *  as such, always returns an empty event to libcppevents.
+     *
+     *  This is less error-prone in cases where many events
+     *  are received in a small amount of time
+     */
     event create_sdl_window_event(native_source_type fd)
     {
         (void)fd;
@@ -127,16 +160,24 @@ namespace cppevents::detail
 
 namespace cppevents
 {
+    // Get X11 window fd that we can monitor
     static native_source_type get_sdl2_x11_source(SDL_SysWMinfo& winfo)
     {
         return ConnectionNumber(winfo.info.x11.display);
     }
 
+    // Get wayland window fd that we can monitor
     static native_source_type get_sdl2_wayland_source(SDL_SysWMinfo& winfo)
     {
         return wl_display_get_fd(winfo.info.wl.display);
     }
 
+    /*!
+     *  \brief  Get an usable event source from a pointer to SDL window
+     *
+     *  \param  window  SDL_Window* to get the native source type from
+     *  \return cppevents native_source_type that can be used as normal
+     */
     native_source_type get_sdl_event_source(SDL_Window* window)
     {
         SDL_SysWMinfo info;
@@ -161,3 +202,24 @@ namespace cppevents
     }
 }
 
+/*
+ Copyright (c) 2020 Jari Ronkainen
+
+    This software is provided 'as-is', without any express or implied warranty.
+    In no event will the authors be held liable for any damages arising from the
+    use of this software.
+
+    Permission is granted to anyone to use this software for any purpose, including
+    commercial applications, and to alter it and redistribute it freely, subject to
+    the following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not claim
+       that you wrote the original software. If you use this software in a product,
+       an acknowledgment in the product documentation would be appreciated but is
+       not required.
+
+    2. Altered source versions must be plainly marked as such, and must not be
+       misrepresented as being the original software.
+
+    3. This notice may not be removed or altered from any source distribution.
+*/

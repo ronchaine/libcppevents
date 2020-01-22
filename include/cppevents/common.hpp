@@ -9,6 +9,8 @@ namespace cppevents
 
     constexpr static int UNINITIALISED_FILE_DESCRIPTOR  = -2;
 
+    struct empty_event{};
+
     template <typename T>
     class badge
     {
