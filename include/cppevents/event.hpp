@@ -1,3 +1,9 @@
+/*!
+ *  \file       event.hpp
+ *  \brief      event type for libcppevents
+ *  \author     Jari Ronkainen
+ *  \version    0.8
+ */
 #ifndef CPPEVENTS_EVENT_HPP
 #define CPPEVENTS_EVENT_HPP
 
@@ -38,6 +44,11 @@ namespace cppevents
         using handler_ptr = void* (*)(handler_action, event const*, event*);
     }
 
+    /*!
+     *  \brief  Get an event_typeid for a template type
+     *
+     *  \return event_typeid for the type requested
+     */
     template <typename T>
     event_typeid get_event_id_for()
     {
@@ -49,6 +60,12 @@ namespace cppevents
         return ids;
     }
 
+    /*!
+     *  \brief  Common event type, can be casted to a more useful type
+     *
+     *  Used with event_cast to take care of differing event types.  Much of
+     *  this was inspired by libc++ std::any implementation.
+     */
     class event
     {
         public:
@@ -69,6 +86,7 @@ namespace cppevents
                     handler(detail::handler_action::destroy, this, nullptr);
             }
 
+            //! Get event type id for this event
             event_typeid type() const noexcept { return id; }
 
             event& operator=(event&& other) noexcept
@@ -105,6 +123,7 @@ namespace cppevents
         preferred_handler<T>::create(*this, std::forward<T>(value));
     }
 
+    // Type to handle events with small-object-optimisation
     template <typename T>
     struct detail::internal_event_handler
     {
@@ -164,6 +183,7 @@ namespace cppevents
         }
     };
 
+    // Type to handle events without small-object-optimisation
     template <typename T>
     struct detail::external_event_handler
     {
@@ -213,12 +233,23 @@ namespace cppevents
         }
     };
 
+    /*!
+     *  \brief  Cast an event to a more specific type
+     *
+     *  \param  ev  reference to a generic event
+     *
+     *  Converts a libcppevent generic event type to a type requested,
+     *  the type of the event given must match event id of the type
+     *
+     *  \return Type requested
+     */
     template <typename T>
     T event_cast(event& ev)
     {
         using raw_type = typename std::remove_cvref<T>::type;
 
         raw_type* ptr = reinterpret_cast<raw_type*>(event::preferred_handler<raw_type>::handle(detail::handler_action::get, &ev, nullptr));
+        assert(get_event_id_for<T>() == ev.type());
         assert(ptr != nullptr);
 
         return *ptr;
@@ -226,3 +257,25 @@ namespace cppevents
 }
 
 #endif
+
+/*
+    Copyright (c) 2020 Jari Ronkainen
+
+    This software is provided 'as-is', without any express or implied warranty.
+    In no event will the authors be held liable for any damages arising from the
+    use of this software.
+
+    Permission is granted to anyone to use this software for any purpose, including
+    commercial applications, and to alter it and redistribute it freely, subject to
+    the following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not claim
+       that you wrote the original software. If you use this software in a product,
+       an acknowledgment in the product documentation would be appreciated but is
+       not required.
+
+    2. Altered source versions must be plainly marked as such, and must not be
+       misrepresented as being the original software.
+
+    3. This notice may not be removed or altered from any source distribution.
+*/

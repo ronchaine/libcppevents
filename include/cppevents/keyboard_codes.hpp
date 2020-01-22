@@ -1,3 +1,9 @@
+/*!
+ *  \file       keyboard_codes.hpp
+ *  \brief      keyboard codes used by libcppevents
+ *  \author     Jari Ronkainen
+ *  \version    0.9
+ */
 #ifndef LIBCPPEVENTS_KEYBOARD_CODES_HPP
 #define LIBCPPEVENTS_KEYBOARD_CODES_HPP
 
@@ -5,8 +11,15 @@
 
 namespace cppevents
 {
-    // From Universal Serial Bus HID Usage Tables,
-    // 0x10000+ are custom, USB reserves E8-FFFF
+    /*!
+     *  \brief enumeration for keyboard scancodes
+     *
+     *  The scancodes follow USB HID Usage tables,
+     *  0x10000+ are reserved for custom scancodes.
+     *
+     *  USB itself reserves 0xE8-0xFFFF, so those
+     *  are left unused
+     */
     enum class scancode : uint32_t
     {
         key_none                = 0x00,
@@ -261,3 +274,13 @@ namespace cppevents
 }
 
 #endif
+/*
+    Copyright (c) 2020 Jari Ronkainen
+
+    This software is provided 'as-is', without any express or implied warranty.
+    In no event will the authors be held liable for any damages arising from the
+    use of this software.
+
+    Permission is granted to anyone to use this software for any purpose, including
+    commercial applications, and to alter it and redistribute it freely.
+*/

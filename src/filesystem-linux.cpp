@@ -29,20 +29,4 @@ namespace cppevents
         if (notifier.descriptor >= 0)
             close(notifier.descriptor);
     }
-
-    /*
-    error_code watch_path(const std::string& path, event_queue& queue)
-    {
-        // handle this locally
-        int new_watch = inotify_add_watch(notifier.descriptor, path.c_str(),
-                                IN_ACCESS | IN_ATTRIB | IN_OPEN | IN_CLOSE |
-                                IN_CREATE | IN_DELETE | IN_DELETE_SELF |
-                                IN_MODIFY | IN_MOVE | IN_MOVE_SELF);
-
-        (void)new_watch;
-        (void)queue;
-
-        return error_code::success;
-    }
-    */
 }

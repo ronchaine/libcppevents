@@ -2,7 +2,7 @@
  *  \file       sdl2-integration.cpp
  *  \brief      SDL2 integration for libcppevents
  *  \author     Jari Ronkainen
- *  \version    0.7.0
+ *  \version    0.7
  *
  *  Implementations to turn SDL2 events into libcppevents events
  *
@@ -10,7 +10,6 @@
  *  \todo Cocoa support
  *  \todo Text input support
  */
-
 #include <cppevents/sdl2.hpp>
 #include <unordered_map>
 
@@ -203,7 +202,7 @@ namespace cppevents
 }
 
 /*
- Copyright (c) 2020 Jari Ronkainen
+    Copyright (c) 2020 Jari Ronkainen
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the
