@@ -199,6 +199,18 @@ namespace cppevents
 
         return 0;
     }
+
+    // Specialise cppevents templates
+    template <> error_code add_source<cppevents::window, SDL_Window*>(
+        SDL_Window* window,
+        event_queue& queue)
+    {
+        std::cout << "adding native sdl source\n";
+        cppevents::native_source_type src = cppevents::get_sdl_event_source(window);
+        queue.add_native_source(src, cppevents::detail::create_sdl_window_event);
+
+        return error_code::success;
+    }
 }
 
 /*

@@ -46,5 +46,7 @@ not familiar with Windows interfaces.
 Current status
 --------------
 
-### `filesystem_event`
-### `timer_event`
+- Event API implemented and workign
+- It is simple to add new event types
+- SDL2 tie-ins exist
+

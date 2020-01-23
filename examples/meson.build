@@ -21,6 +21,7 @@ if sdl2_dep.found()
     dependencies: [
       cppevents_dep,
       sdl2_dep,
+      cppevents_sdl2_dep,
     ]
   )
 endif
