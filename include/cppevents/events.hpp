@@ -75,8 +75,22 @@ namespace cppevents
     //! Default event queue type, generally used if no other queue is specified
     inline event_queue default_queue;
 
+    template <typename T>
+    concept directly_applicable = requires (T t)
+    {
+        T::enable_cppevents == true;
+        { t.connect_events };
+    };
+
     template <typename Source, typename T>
     error_code add_source(T&, event_queue& = default_queue);
+
+    template <typename Source, directly_applicable T>
+    error_code add_source(T& src, event_queue& q = default_queue)
+    {
+        src.connect_events(q, 0);
+        return error_code::success;
+    }
 
     template <typename Source, typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
     error_code add_source(T, event_queue& = default_queue);
