@@ -10,10 +10,6 @@ project(
 
 compiler = meson.get_compiler('cpp').get_id()
 
-if compiler == 'clang'
-  add_project_arguments(['-Xclang', '-fconcepts-ts'], language : 'cpp')
-endif
-
 add_project_arguments(['-Wall', '-Wextra', '-Wno-missing-braces'], language : 'cpp')
 
 cppevents_include_path = include_directories('include')
