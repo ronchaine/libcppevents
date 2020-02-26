@@ -2,7 +2,7 @@
  *  \file       common.hpp
  *  \brief      common types and constants for libcppevents
  *  \author     Jari Ronkainen
- *  \version    0.1
+ *  \version    0.2
  */
 #ifndef LIBCPPEVENT_COMMON_HPP
 #define LIBCPPEVENT_COMMON_HPP
@@ -15,6 +15,13 @@ namespace cppevents
 
     constexpr static int UNINITIALISED_FILE_DESCRIPTOR  = -2;
 
+    /*!
+     *  \brief type for empty events
+     *
+     *  empty_event is a special return value from translator functions,
+     *  when it is the *only* event type received, the 'wait'-command
+     *  does not get unblocked
+     */
     struct empty_event{};
 
     template <typename T>

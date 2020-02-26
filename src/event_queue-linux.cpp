@@ -109,8 +109,10 @@ namespace cppevents
      */
     void event_queue::implementation::wait(std::chrono::milliseconds timeout)
     {
+        all_events_ignored:
         constexpr static int max_events = 16;
         int event_count = 0;
+        int ignored_events = 0;
 
         epoll_event native_event[max_events];
 
@@ -130,9 +132,18 @@ namespace cppevents
 
             event ev = event_translators[native_event[i].data.fd](native_event[i].data.fd);
 
+            if (get_event_id_for<empty_event>() == ev.type())
+            {
+                ignored_events++;
+                continue;
+            }
+
             for (auto& callback : events[ev.type()])
                 callback(ev);
         }
+
+        if (ignored_events == event_count)
+            goto all_events_ignored;
     }
 
     /**

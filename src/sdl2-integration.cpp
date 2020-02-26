@@ -152,7 +152,6 @@ namespace cppevents::detail
                     continue;
             }
         }
-
         return empty_event{};
     }
 }
