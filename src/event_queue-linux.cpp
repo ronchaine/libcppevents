@@ -81,7 +81,7 @@ namespace cppevents
 
         epoll_event ev{};
         ev.data.fd = notify_fd;
-        ev.events = EPOLLIN;
+        ev.events = EPOLLIN | EPOLLET;
 
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, notify_fd, &ev) == -1)
             ;
@@ -166,24 +166,6 @@ namespace cppevents
         epoll_event ev{};
 
         ev.events = EPOLLIN;
-        ev.data.fd = fd;
-
-        if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev))
-            return error_code::system_error;
-
-        event_translators[fd] = func;
-        event_destructors[fd] = rfunc;
-
-        return error_code::success;
-    }
-
-    error_code event_queue::implementation::add_edge_triggered_native_source(native_source_type fd,
-                                                                             translator_type func,
-                                                                             destructor_type rfunc)
-    {
-        epoll_event ev{};
-
-        ev.events = EPOLLIN | EPOLLET;
         ev.data.fd = fd;
 
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev))
