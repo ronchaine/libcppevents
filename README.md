@@ -28,6 +28,10 @@ What we want to do is
 - Make it easy to tie library (e.g. SDL or GLFW) window events to
   the event system
 - Support platforms other than Linux
+  - [ ] Windows
+  - [ ] OS X
+  - [ ] *BSD
+  - [ ] freeRTOS
 
 What we do not want to do
 - Implement entire network API for getting socket, we just handle
