@@ -200,6 +200,8 @@ namespace cppevents
                 case handler_action::get:
                     return get(const_cast<event&>(*self));
             }
+            // unreachable, this shuts up gcc
+            return nullptr;
         }
 
         template <typename... Arguments>

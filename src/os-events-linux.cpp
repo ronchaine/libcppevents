@@ -39,7 +39,7 @@ namespace cppevents
         ev.trap_no = siginfo.ssi_trapno;
         ev.status = siginfo.ssi_status;
 
-        return std::move(ev);
+        return ev;
     }
 
     void delete_signal_event(int fd)

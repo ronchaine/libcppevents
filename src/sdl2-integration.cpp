@@ -25,9 +25,38 @@ namespace cppevents::detail
      *  Takes in a SDL_Event and translates it to cppevents
      *  window event, and sends it to concerned entities
      */
-    void translate_sdl_window_event(SDL_Event& ev)
+    static void translate_sdl_window_event(SDL_Event& sdl_event)
     {
-        (void)ev;
+        switch (sdl_event.type)
+        {
+            case SDL_WINDOWEVENT_CLOSE:
+                {
+                    window_event event;
+                    event.window_id = sdl_event.window.windowID;
+                    event.type = event.subtype::close;
+                    event.x = 0;
+                    event.y = 0;
+                    send_event(event);
+                    return;
+                }
+            case SDL_WINDOWEVENT_SHOWN:
+            case SDL_WINDOWEVENT_HIDDEN:
+            case SDL_WINDOWEVENT_EXPOSED:
+            case SDL_WINDOWEVENT_MOVED:
+            case SDL_WINDOWEVENT_RESIZED:
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
+            case SDL_WINDOWEVENT_MINIMIZED:
+            case SDL_WINDOWEVENT_MAXIMIZED:
+            case SDL_WINDOWEVENT_RESTORED:
+            case SDL_WINDOWEVENT_ENTER:
+            case SDL_WINDOWEVENT_LEAVE:
+            case SDL_WINDOWEVENT_FOCUS_GAINED:
+            case SDL_WINDOWEVENT_FOCUS_LOST:
+            case SDL_WINDOWEVENT_TAKE_FOCUS:
+            case SDL_WINDOWEVENT_HIT_TEST:
+            default:
+                break;
+        }
     }
 
     /*!
@@ -36,7 +65,7 @@ namespace cppevents::detail
      *  Takes in a SDL_Event and translates it to cppevents
      *  input event, and sends it to concerned entities
      */
-    void translate_sdl_input_event(SDL_Event& sdl_event)
+    static void translate_sdl_input_event(SDL_Event& sdl_event)
     {
         switch (sdl_event.type)
         {
@@ -147,6 +176,17 @@ namespace cppevents::detail
                 case SDL_TEXTEDITING:
                     std::cout << "sdl text input\n";
                     continue;
+                case SDL_QUIT:
+
+                    // FIXME: HACK, remove this and do something smarter
+                    window_event event;
+                    event.window_id = sdl_event.window.windowID;
+                    event.type = event.subtype::close;
+                    event.x = 0;
+                    event.y = 0;
+                    send_event(event);
+
+                    return empty_event{};
                 default:
                     std::cerr << "ERROR: unhandled SDL event type " << ev.type << "\n";
                     continue;
@@ -200,7 +240,7 @@ namespace cppevents
     }
 
     // Specialise cppevents templates
-    template <> error_code add_source<cppevents::window, SDL_Window*>(
+    template <> error_code add_source<cppevents::window_event, SDL_Window*>(
         SDL_Window* window,
         event_queue& queue)
     {

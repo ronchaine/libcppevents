@@ -36,7 +36,7 @@ int main()
     SDL_RenderClear(renderer);
 
     // adds SDL window as an event source
-    cppevents::add_source<cppevents::window>(window);
+    cppevents::add_source<cppevents::window_event>(window);
 
     cppevents::on_event<cppevents::keyboard_event>([&](cppevents::event& raw){
         auto event = event_cast<cppevents::keyboard_event>(raw);

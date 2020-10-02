@@ -2,7 +2,7 @@
  *  \file       input.hpp
  *  \brief      basic input event types for libcppevent
  *  \author     Jari Ronkainen
- *  \version    0.5
+ *  \version    0.6
  */
 #ifndef LIBCPPEVENTS_INPUT_HPP
 #define LIBCPPEVENTS_INPUT_HPP
@@ -14,7 +14,7 @@ namespace cppevents
 {
     struct keyboard_event
     {
-        enum subtype : unsigned int {
+        enum subtype : uint32_t {
             key_down,
             key_up,
         };
@@ -27,7 +27,7 @@ namespace cppevents
 
     struct mouse_button
     {
-        enum subtype : unsigned int {
+        enum subtype : uint32_t {
             button_down,
             button_up,
         };
@@ -39,32 +39,32 @@ namespace cppevents
         uint32_t click_count = 0;
         uint32_t button = 0;
 
-        int x_pixels = 0;
-        int y_pixels = 0;
+        int32_t x_pixels = 0;
+        int32_t y_pixels = 0;
     };
 
     struct mouse_motion
     {
         uint32_t mouse_instance = 0;
 
-        int x_pixels = 0;
-        int y_pixels = 0;
+        int32_t x_pixels = 0;
+        int32_t y_pixels = 0;
 
-        int x_relative = 0;
-        int y_relative = 0;
+        int32_t x_relative = 0;
+        int32_t y_relative = 0;
     };
 
     struct mouse_wheel
     {
         uint32_t mouse_instance = 0;
 
-        int vertical_scroll = 0;
-        int horizontal_scroll = 0;
+        int32_t vertical_scroll = 0;
+        int32_t horizontal_scroll = 0;
     };
 
     struct touch
     {
-        enum subtype : unsigned int {
+        enum subtype : uint32_t {
             motion,
             press,
             release,
@@ -76,7 +76,7 @@ namespace cppevents
 
     struct controller_event
     {
-        enum subtype : unsigned int {
+        enum subtype : uint32_t {
         };
 
         subtype type;

@@ -8,6 +8,21 @@ namespace cppevents
 {
     struct window_event
     {
+        enum subtype : uint32_t
+        {
+            move,
+            close,
+            resize,
+            focus_gained,
+            focus_lost,
+        };
+
+        subtype type;
+
+        uint32_t window_id;
+
+        int32_t x;
+        int32_t y;
     };
 
     // can send both window and input events
