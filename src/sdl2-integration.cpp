@@ -180,7 +180,7 @@ namespace cppevents::detail
 
                     // FIXME: HACK, remove this and do something smarter
                     window_event event;
-                    event.window_id = sdl_event.window.windowID;
+                    event.window_id = ev.window.windowID;
                     event.type = event.subtype::close;
                     event.x = 0;
                     event.y = 0;
