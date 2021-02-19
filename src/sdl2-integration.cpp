@@ -115,7 +115,7 @@ namespace cppevents::detail
             case SDL_FINGERDOWN:
             case SDL_FINGERUP:
                 {
-                    touch event;
+                    touch event{};
                     send_event(event);
                     return;
                 }

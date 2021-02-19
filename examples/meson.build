@@ -7,12 +7,6 @@ executable(
   dependencies: cppevents_dep
 )
 
-executable(
-  'filesystem-example',
-  'filesystem-example.cpp',
-  dependencies: cppevents_dep
-)
-
 if sdl2_dep.found()
   executable(
     'sdl-example',
