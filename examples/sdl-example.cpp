@@ -15,19 +15,11 @@ int main()
         return -1;
     }
 
-    SDL_Surface *window_surface = SDL_GetWindowSurface(window);
-
-    if (!window_surface)
-    {
-        std::cout << "can't get surface\n";
-        return -1;
-    }
-
     SDL_Renderer* renderer = nullptr;
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer)
     {
-        std::cout << "can't get renderer\n";
+        std::cout << "can't get renderer " << SDL_GetError() << "\n";
         return -1;
     }
 
