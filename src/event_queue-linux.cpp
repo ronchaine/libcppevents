@@ -83,7 +83,7 @@ namespace cppevents
         ev.data.fd = notify_fd;
         ev.events = EPOLLIN | EPOLLET;
 
-        if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, notify_fd, &ev) == -1)
+        if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, notify_fd, &ev) == -1) {}
             ;
     }
 
