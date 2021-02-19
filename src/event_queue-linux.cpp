@@ -41,7 +41,7 @@ namespace cppevents
             error_code add_edge_triggered_native_source(native_source_type fd, translator_type func, destructor_type);
             void remove_native_source(native_source_type fd);
 
-            error_code send_event(event_typeid, event);
+            error_code send_event(event_typeid, raw_event);
 
         private:
             std::unordered_map<event_typeid, std::deque<event_callback_type>> events;
@@ -66,7 +66,7 @@ namespace cppevents
     { return impl->add_native_source(evdesc, func, rfunc); }
     void event_queue::remove_native_source(native_source_type evdesc) { return impl->remove_native_source(evdesc); }
 
-    error_code event_queue::send_event(event_typeid type, event ev) { return impl->send_event(type, std::move(ev)); }
+    error_code event_queue::send_event(event_typeid type, raw_event ev) { return impl->send_event(type, std::move(ev)); }
 
     // Actual implementation
     event_queue::event_queue() : impl(std::make_unique<implementation>()) {}
@@ -130,7 +130,7 @@ namespace cppevents
             if (event_translators[native_event[i].data.fd] == nullptr)
                 continue;
 
-            event ev = event_translators[native_event[i].data.fd](native_event[i].data.fd);
+            raw_event ev = event_translators[native_event[i].data.fd](native_event[i].data.fd);
 
             if (get_event_id_for<empty_event>() == ev.type())
             {
@@ -157,7 +157,7 @@ namespace cppevents
     /**
      * Handle sent event directly
      */
-    error_code event_queue::implementation::send_event(event_typeid type, event ev)
+    error_code event_queue::implementation::send_event(event_typeid type, raw_event ev)
     {
         (void)type;
         for (auto& callback : events[ev.type()])

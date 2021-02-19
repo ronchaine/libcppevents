@@ -17,7 +17,7 @@
 
 namespace cppevents
 {
-    class event;
+    class raw_event;
 
     namespace detail
     {
@@ -41,7 +41,7 @@ namespace cppevents
             data_buffer_type data;
         };
 
-        using handler_ptr = void* (*)(handler_action, event const*, event*);
+        using handler_ptr = void* (*)(handler_action, raw_event const*, raw_event*);
     }
 
     /*!
@@ -52,7 +52,7 @@ namespace cppevents
     template <typename T>
     event_typeid get_event_id_for()
     {
-        static_assert(!std::is_same_v<event, T>);
+        static_assert(!std::is_same_v<raw_event, T>);
         static_assert(std::is_same_v<std::decay_t<T>, T>);
         static_assert(std::is_same_v<typename std::remove_cvref<T>::type, T>);
         static event_typeid ids = detail::event_typeid_counter++;
@@ -66,21 +66,21 @@ namespace cppevents
      *  Used with event_cast to take care of differing event types.  Much of
      *  this was inspired by libc++ std::any implementation.
      */
-    class event
+    class raw_event
     {
         public:
             template <typename ValueType, typename T = std::decay_t<ValueType>>
-            event(ValueType&&);
+            raw_event(ValueType&&);
 
-            event(const event&) = delete;
-            event(event&& other) noexcept
+            raw_event(const raw_event&) = delete;
+            raw_event(raw_event&& other) noexcept
             {
                 if (other.handler != nullptr)
                     other.handler(detail::handler_action::move, &other, this);
                 id = other.id;
             }
 
-            ~event()
+            ~raw_event()
             {
                 if (handler != nullptr)
                     handler(detail::handler_action::destroy, this, nullptr);
@@ -89,7 +89,7 @@ namespace cppevents
             //! Get event type id for this event
             event_typeid type() const noexcept { return id; }
 
-            event& operator=(event&& other) noexcept
+            raw_event& operator=(raw_event&& other) noexcept
             {
                 if (other.handler != nullptr)
                     other.handler(detail::handler_action::move, &other, this);
@@ -104,7 +104,7 @@ namespace cppevents
             template <typename T> friend struct detail::internal_event_handler;
             template <typename T> friend struct detail::external_event_handler;
 
-            template <typename T> friend T event_cast(event& ev);
+            template <typename T> friend T event_cast(raw_event& ev);
 
             template <typename T>
             using preferred_handler = typename std::conditional<use_small_object_optimisation<T>::value,
@@ -118,7 +118,7 @@ namespace cppevents
     };
 
     template <typename ValueType, typename T>
-    event::event(ValueType&& value)
+    raw_event::raw_event(ValueType&& value)
     {
         preferred_handler<T>::create(*this, std::forward<T>(value));
     }
@@ -128,7 +128,7 @@ namespace cppevents
     struct detail::internal_event_handler
     {
         template <typename... Arguments>
-        static T& create(event& dest, Arguments&&... args)
+        static T& create(raw_event& dest, Arguments&&... args)
         {
             T* rval = new (&dest.storage.data) T(std::forward<Arguments>(args)...);
             dest.handler = &internal_event_handler::handle;
@@ -137,7 +137,7 @@ namespace cppevents
         }
 
         template <typename... Arguments>
-        static T& create_noid(event& dest, Arguments&&... args)
+        static T& create_noid(raw_event& dest, Arguments&&... args)
         {
             T* rval = new (&dest.storage.data) T(std::forward<Arguments>(args)...);
             dest.handler = &internal_event_handler::handle;
@@ -145,39 +145,39 @@ namespace cppevents
         }
 
 
-        static void destroy(event& self)
+        static void destroy(raw_event& self)
         {
             T& val = *static_cast<T*>(static_cast<void*>(&self.storage.data));
             val.~T();
             self.handler = nullptr;
         }
 
-        static void move(event& self, event& dest)
+        static void move(raw_event& self, raw_event& dest)
         {
             create_noid(dest, std::move(*static_cast<T*>(static_cast<void*>(&self.storage.data))));
             dest.id = self.id;
             destroy(self);
         }
 
-        static void* get(event& self)
+        static void* get(raw_event& self)
         {
             if (self.id == get_event_id_for<T>())
                 return static_cast<void*>(&self.storage.data);
             return nullptr;
         }
 
-        static void* handle(handler_action act, event const* self, event* other)
+        static void* handle(handler_action act, raw_event const* self, raw_event* other)
         {
             switch(act)
             {
                 case handler_action::destroy:
-                    destroy(const_cast<event&>(*self));
+                    destroy(const_cast<raw_event&>(*self));
                     return nullptr;
                 case handler_action::move:
-                    move(const_cast<event&>(*self), *other);
+                    move(const_cast<raw_event&>(*self), *other);
                     return nullptr;
                 case handler_action::get:
-                    return get(const_cast<event&>(*self));
+                    return get(const_cast<raw_event&>(*self));
             }
             return nullptr;
         }
@@ -187,25 +187,25 @@ namespace cppevents
     template <typename T>
     struct detail::external_event_handler
     {
-        static void* handle(handler_action act, event const* self, event* other)
+        static void* handle(handler_action act, raw_event const* self, raw_event* other)
         {
             switch(act)
             {
                 case handler_action::destroy:
-                    destroy(const_cast<event&>(*self));
+                    destroy(const_cast<raw_event&>(*self));
                     return nullptr;
                 case handler_action::move:
-                    move(const_cast<event&>(*self), *other);
+                    move(const_cast<raw_event&>(*self), *other);
                     return nullptr;
                 case handler_action::get:
-                    return get(const_cast<event&>(*self));
+                    return get(const_cast<raw_event&>(*self));
             }
             // unreachable, this shuts up gcc
             return nullptr;
         }
 
         template <typename... Arguments>
-        static T& create(event& dest, Arguments&&... args)
+        static T& create(raw_event& dest, Arguments&&... args)
         {
             dest.storage.ptr = ::new T(std::forward<Arguments>(args)...);
             dest.handler = &external_event_handler::handle;
@@ -213,13 +213,13 @@ namespace cppevents
             return *static_cast<T*>(dest.storage.ptr);
         }
 
-        static void destroy(event& self)
+        static void destroy(raw_event& self)
         {
             delete static_cast<T*>(self.storage.ptr);
             self.handler = nullptr;
         }
 
-        static void move(event& self, event& dest)
+        static void move(raw_event& self, raw_event& dest)
         {
             dest.storage.ptr = self.storage.ptr;
             dest.handler = &external_event_handler::handle;
@@ -227,7 +227,7 @@ namespace cppevents
             self.handler = nullptr;
         }
 
-        static void* get(event& self)
+        static void* get(raw_event& self)
         {
             if (self.id == get_event_id_for<T>())
                 return self.storage.ptr;
@@ -246,11 +246,11 @@ namespace cppevents
      *  \return Type requested
      */
     template <typename T>
-    T event_cast(event& ev)
+    T event_cast(raw_event& ev)
     {
         using raw_type = typename std::remove_cvref<T>::type;
 
-        raw_type* ptr = reinterpret_cast<raw_type*>(event::preferred_handler<raw_type>::handle(detail::handler_action::get, &ev, nullptr));
+        raw_type* ptr = reinterpret_cast<raw_type*>(raw_event::preferred_handler<raw_type>::handle(detail::handler_action::get, &ev, nullptr));
         assert(get_event_id_for<T>() == ev.type());
         assert(ptr != nullptr);
 

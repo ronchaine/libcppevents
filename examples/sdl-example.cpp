@@ -30,7 +30,7 @@ int main()
     // adds SDL window as an event source
     cppevents::add_source<cppevents::window_event>(window);
 
-    cppevents::on_event<cppevents::keyboard_event>([&](cppevents::event& raw){
+    cppevents::on_event<cppevents::keyboard_event>([&](cppevents::raw_event& raw){
         auto event = event_cast<cppevents::keyboard_event>(raw);
 
         std::cout << "Key " << static_cast<uint32_t>(event.scancode) << " ";
@@ -46,12 +46,12 @@ int main()
         }
     });
 
-    cppevents::on_event<cppevents::mouse_motion>([&](cppevents::event& raw){
+    cppevents::on_event<cppevents::mouse_motion>([&](cppevents::raw_event& raw){
         auto event = event_cast<cppevents::mouse_motion>(raw);
         std::cout << "Mouse moved by " << event.x_relative << "," << event.y_relative << " to " << event.x_pixels << "," << event.y_pixels << "\n";
     });
 
-    cppevents::on_event<cppevents::mouse_button>([&](cppevents::event& raw){
+    cppevents::on_event<cppevents::mouse_button>([&](cppevents::raw_event& raw){
         auto event = event_cast<cppevents::mouse_button>(raw);
 
         std::cout << "Mouse " << event.mouse_instance << " button " << static_cast<uint32_t>(event.button) << " ";

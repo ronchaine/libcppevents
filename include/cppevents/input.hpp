@@ -10,10 +10,18 @@
 #include "events.hpp"
 #include "keyboard_codes.hpp"
 
+namespace cppevents::event_group
+{
+    struct input {};
+}
 namespace cppevents
 {
+
     struct keyboard_event
     {
+        using group = event_group::input;
+
+
         enum subtype : uint32_t {
             key_down,
             key_up,

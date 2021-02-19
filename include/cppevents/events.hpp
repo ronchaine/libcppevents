@@ -26,11 +26,11 @@ namespace cppevents
 {
     class event_queue;
 
-    using event_callback_type = std::function<void(event&)>;
+    using event_callback_type = std::function<void(raw_event&)>;
 
     // file descriptor for POSIX
     using native_source_type = int;
-    using translator_type = event(*)(native_source_type);
+    using translator_type = raw_event(*)(native_source_type);
     using destructor_type = void(*)(native_source_type);
 
     /*!
@@ -65,7 +65,7 @@ namespace cppevents
 
             template <typename EventType>
             error_code send_event(EventType ev) { return send_event(get_event_id_for<EventType>(), ev); }
-            error_code send_event(event_typeid, event);
+            error_code send_event(event_typeid, raw_event);
 
         private:
             class implementation;
@@ -95,8 +95,8 @@ namespace cppevents
     template <typename EventType>
     error_code send_event(EventType ev) { return default_queue.send_event(get_event_id_for<EventType>(), std::move(ev)); }
 
-    inline error_code send_event(event&& ev) { return default_queue.send_event(ev.type(), std::move(ev)); }
-    inline error_code send_event(event_typeid type, event ev) { return default_queue.send_event(type, std::move(ev)); }
+    inline error_code send_event(raw_event&& ev) { return default_queue.send_event(ev.type(), std::move(ev)); }
+    inline error_code send_event(event_typeid type, raw_event ev) { return default_queue.send_event(type, std::move(ev)); }
 }
 
 #endif

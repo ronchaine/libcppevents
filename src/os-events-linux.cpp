@@ -23,7 +23,7 @@ namespace cppevents
 {
     static int signal_fd = -1;
 
-    event create_signal_event(int fd)
+    raw_event create_signal_event(int fd)
     {
         signal_event ev;
 

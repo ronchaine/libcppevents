@@ -134,7 +134,7 @@ namespace cppevents::detail
      *  This is less error-prone in cases where many events
      *  are received in a small amount of time
      */
-    event create_sdl_window_event(native_source_type fd)
+    raw_event create_sdl_window_event(native_source_type fd)
     {
         (void)fd;
 
