@@ -75,7 +75,7 @@ namespace cppevents
     //! Default event queue type, generally used if no other queue is specified
     inline event_queue default_queue;
 
-    template <typename Source, typename T>
+    template <typename Source, typename T> requires (not std::is_fundamental<T>::value) && (not std::is_pointer<T>::value)
     error_code add_source(T&, event_queue& = default_queue);
 
     template <typename Source, typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
