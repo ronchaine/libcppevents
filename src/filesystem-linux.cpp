@@ -8,6 +8,8 @@
 
 namespace cppevents
 {
+    constexpr static int UNINITIALISED_FILE_DESCRIPTOR = -2;
+
     struct inotify_instance
     {
         inotify_instance();

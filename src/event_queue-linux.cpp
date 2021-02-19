@@ -32,7 +32,7 @@ namespace cppevents
             implementation();
             ~implementation();
 
-            void on_event(event_typeid, event_callback_type);
+            void on_event(event_details, event_callback_type);
 
             void wait(std::chrono::milliseconds timeout);
             void poll();
@@ -41,10 +41,10 @@ namespace cppevents
             error_code add_edge_triggered_native_source(native_source_type fd, translator_type func, destructor_type);
             void remove_native_source(native_source_type fd);
 
-            error_code send_event(event_typeid, raw_event);
+            error_code send_event(event_details, raw_event);
 
         private:
-            std::unordered_map<event_typeid, std::deque<event_callback_type>> events;
+            std::unordered_map<event_details, std::deque<event_callback_type>> events;
 
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
@@ -55,7 +55,7 @@ namespace cppevents
     };
 
     // event_queue forwarders
-    void event_queue::on_event(event_typeid evtype, event_callback_type evcallback) { impl->on_event(evtype, evcallback); }
+    void event_queue::on_event(event_details evtype, event_callback_type evcallback) { impl->on_event(evtype, evcallback); }
 
     void event_queue::wait(std::chrono::milliseconds timeout) { impl->wait(timeout); }
     void event_queue::poll() { impl->poll(); }
@@ -66,7 +66,7 @@ namespace cppevents
     { return impl->add_native_source(evdesc, func, rfunc); }
     void event_queue::remove_native_source(native_source_type evdesc) { return impl->remove_native_source(evdesc); }
 
-    error_code event_queue::send_event(event_typeid type, raw_event ev) { return impl->send_event(type, std::move(ev)); }
+    error_code event_queue::send_event(event_details type, raw_event ev) { return impl->send_event(type, std::move(ev)); }
 
     // Actual implementation
     event_queue::event_queue() : impl(std::make_unique<implementation>()) {}
@@ -99,7 +99,7 @@ namespace cppevents
      * \param   evtype  type ID for the event for which the action will be triggered
      * \param   evcall  function to be called when the event happens
      */
-    void event_queue::implementation::on_event(event_typeid evtype, event_callback_type evcall)
+    void event_queue::implementation::on_event(event_details evtype, event_callback_type evcall)
     {
         events[evtype].emplace_back(std::move(evcall));
     }
@@ -132,7 +132,7 @@ namespace cppevents
 
             raw_event ev = event_translators[native_event[i].data.fd](native_event[i].data.fd);
 
-            if (get_event_id_for<empty_event>() == ev.type())
+            if (get_event_details_for<empty_event>() == ev.type())
             {
                 ignored_events++;
                 continue;
@@ -157,7 +157,7 @@ namespace cppevents
     /**
      * Handle sent event directly
      */
-    error_code event_queue::implementation::send_event(event_typeid type, raw_event ev)
+    error_code event_queue::implementation::send_event(event_details type, raw_event ev)
     {
         (void)type;
         for (auto& callback : events[ev.type()])

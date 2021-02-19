@@ -23,7 +23,8 @@ namespace cppevents
     {
         using data_buffer_type = std::aligned_storage<3 * sizeof(void*), std::alignment_of<void*>::value>::type;
 
-        inline std::atomic<event_typeid> event_typeid_counter = 0;
+        inline std::atomic<event_details::id_type> event_id_counter = 0;
+        inline std::atomic<event_details::id_type> group_id_counter = 0;
 
         template <typename T> struct internal_event_handler;
         template <typename T> struct external_event_handler;
@@ -45,17 +46,47 @@ namespace cppevents
     }
 
     /*!
-     *  \brief  Get an event_typeid for a template type
      *
-     *  \return event_typeid for the type requested
      */
     template <typename T>
-    event_typeid get_event_id_for()
+    event_details::id_type get_event_group_id_for() {
+        static event_details::id_type ids = detail::group_id_counter++;
+        return ids;
+    }
+
+    /*!
+     *  \brief  Get an event_details for a template type
+     *
+     *  \return event_details for the type requested
+     */
+    template <typename T>
+    event_details get_event_details_for()
     {
         static_assert(!std::is_same_v<raw_event, T>);
         static_assert(std::is_same_v<std::decay_t<T>, T>);
         static_assert(std::is_same_v<typename std::remove_cvref<T>::type, T>);
-        static event_typeid ids = detail::event_typeid_counter++;
+
+        static event_details ids = {
+            .group_id       = 0,
+            .event_id       = detail::event_id_counter++
+        };
+
+        return ids;
+    }
+
+    template <typename T> requires requires (T t) {
+        T::group;
+    }
+    event_details get_event_details_for()
+    {
+        static_assert(!std::is_same_v<raw_event, T>);
+        static_assert(std::is_same_v<std::decay_t<T>, T>);
+        static_assert(std::is_same_v<typename std::remove_cvref<T>::type, T>);
+
+        static event_details ids = {
+            .group_id       = get_event_group_id_for<T::group>,
+            .event_id       = detail::event_id_counter++
+        };
 
         return ids;
     }
@@ -77,7 +108,7 @@ namespace cppevents
             {
                 if (other.handler != nullptr)
                     other.handler(detail::handler_action::move, &other, this);
-                id = other.id;
+                details = other.details;
             }
 
             ~raw_event()
@@ -87,13 +118,13 @@ namespace cppevents
             }
 
             //! Get event type id for this event
-            event_typeid type() const noexcept { return id; }
+            event_details type() const noexcept { return details; }
 
             raw_event& operator=(raw_event&& other) noexcept
             {
                 if (other.handler != nullptr)
                     other.handler(detail::handler_action::move, &other, this);
-                id = other.id;
+                details = other.details;
                 return *this;
             }
 
@@ -111,7 +142,10 @@ namespace cppevents
                                                                 detail::internal_event_handler<T>,
                                                                 detail::external_event_handler<T>>::type;
 
-            event_typeid id = 0;
+            event_details details = {
+                .group_id = 0,
+                .event_id = 0
+            };
 
             detail::handler_ptr handler = nullptr;
             detail::event_storage storage;
@@ -132,7 +166,7 @@ namespace cppevents
         {
             T* rval = new (&dest.storage.data) T(std::forward<Arguments>(args)...);
             dest.handler = &internal_event_handler::handle;
-            dest.id = get_event_id_for<T>();
+            dest.details = get_event_details_for<T>();
             return *rval;
         }
 
@@ -155,13 +189,13 @@ namespace cppevents
         static void move(raw_event& self, raw_event& dest)
         {
             create_noid(dest, std::move(*static_cast<T*>(static_cast<void*>(&self.storage.data))));
-            dest.id = self.id;
+            dest.details = self.details;
             destroy(self);
         }
 
         static void* get(raw_event& self)
         {
-            if (self.id == get_event_id_for<T>())
+            if (self.details == get_event_details_for<T>())
                 return static_cast<void*>(&self.storage.data);
             return nullptr;
         }
@@ -209,7 +243,7 @@ namespace cppevents
         {
             dest.storage.ptr = ::new T(std::forward<Arguments>(args)...);
             dest.handler = &external_event_handler::handle;
-            dest.id = get_event_id_for<T>();
+            dest.details = get_event_details_for<T>();
             return *static_cast<T*>(dest.storage.ptr);
         }
 
@@ -223,13 +257,13 @@ namespace cppevents
         {
             dest.storage.ptr = self.storage.ptr;
             dest.handler = &external_event_handler::handle;
-            dest.id = self.id;
+            dest.details = self.details;
             self.handler = nullptr;
         }
 
         static void* get(raw_event& self)
         {
-            if (self.id == get_event_id_for<T>())
+            if (self.details == get_event_details_for<T>())
                 return self.storage.ptr;
             return nullptr;
         }
@@ -251,7 +285,7 @@ namespace cppevents
         using raw_type = typename std::remove_cvref<T>::type;
 
         raw_type* ptr = reinterpret_cast<raw_type*>(raw_event::preferred_handler<raw_type>::handle(detail::handler_action::get, &ev, nullptr));
-        assert(get_event_id_for<T>() == ev.type());
+        assert(get_event_details_for<T>() == ev.type());
         assert(ptr != nullptr);
 
         return *ptr;

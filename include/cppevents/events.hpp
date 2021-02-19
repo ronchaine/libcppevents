@@ -49,11 +49,11 @@ namespace cppevents
             template <typename T, typename... Others>
             void on_event(event_callback_type callback)
             {
-                on_event(get_event_id_for<T>(), callback);
+                on_event(get_event_details_for<T>(), callback);
                 if constexpr (sizeof...(Others) > 0)
                     on_event<Others...>(callback);
             }
-            void on_event(event_typeid, event_callback_type);
+            void on_event(event_details, event_callback_type);
 
             void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(-1));
             void poll();
@@ -64,8 +64,8 @@ namespace cppevents
             void remove_native_source(native_source_type);
 
             template <typename EventType>
-            error_code send_event(EventType ev) { return send_event(get_event_id_for<EventType>(), ev); }
-            error_code send_event(event_typeid, raw_event);
+            error_code send_event(EventType ev) { return send_event(get_event_details_for<EventType>(), ev); }
+            error_code send_event(event_details, raw_event);
 
         private:
             class implementation;
@@ -87,16 +87,16 @@ namespace cppevents
         default_queue.on_event<Types...>(callback);
     }
 
-    inline void on_event(event_typeid eid, event_callback_type ect) { default_queue.on_event(eid, ect); }
+    inline void on_event(event_details eid, event_callback_type ect) { default_queue.on_event(eid, ect); }
 
     inline void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(-1)) { default_queue.wait(timeout); }
     inline void poll() { default_queue.poll(); }
 
     template <typename EventType>
-    error_code send_event(EventType ev) { return default_queue.send_event(get_event_id_for<EventType>(), std::move(ev)); }
+    error_code send_event(EventType ev) { return default_queue.send_event(get_event_details_for<EventType>(), std::move(ev)); }
 
     inline error_code send_event(raw_event&& ev) { return default_queue.send_event(ev.type(), std::move(ev)); }
-    inline error_code send_event(event_typeid type, raw_event ev) { return default_queue.send_event(type, std::move(ev)); }
+    inline error_code send_event(event_details type, raw_event ev) { return default_queue.send_event(type, std::move(ev)); }
 }
 
 #endif

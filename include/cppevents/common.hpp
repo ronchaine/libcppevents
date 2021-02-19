@@ -8,12 +8,19 @@
 #define LIBCPPEVENT_COMMON_HPP
 
 #include <cstdint>
+#include <functional>
 
 namespace cppevents
 {
-    using event_typeid = uint64_t;
+    struct event_details
+    {
+        using id_type = uint64_t;
 
-    constexpr static int UNINITIALISED_FILE_DESCRIPTOR  = -2;
+        id_type group_id;
+        id_type event_id;
+
+        constexpr auto operator<=>(const event_details&) const noexcept = default;
+    };
 
     /*!
      *  \brief type for empty events
@@ -36,6 +43,23 @@ namespace cppevents
         success         = 0,
         system_error    = 1,
         already_exists  = 2,
+    };
+}
+
+namespace std
+{
+    template <>
+    struct hash<cppevents::event_details>
+    {
+        size_t operator()(const cppevents::event_details& ed) const {
+            constexpr static size_t prime = 2027;
+            size_t hash_value = hash<uint64_t>{}(ed.group_id);
+
+            hash_value *= prime;
+            hash_value += hash<uint64_t>{}(ed.event_id);
+
+            return hash_value;
+        }
     };
 }
 
