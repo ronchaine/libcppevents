@@ -76,11 +76,11 @@ namespace cppevents::detail
                     event.type = sdl_event.type == SDL_KEYDOWN ? keyboard_event::key_down : keyboard_event::key_up;
                     if (sdl_event.key.keysym.scancode <= 0xE7)
                     {
-                        event.scancode = static_cast<scancode>(sdl_event.key.keysym.scancode);
+                        event.scancode = static_cast<kb::scancode>(sdl_event.key.keysym.scancode);
                     } else {
-                        event.scancode = scancode::key_none;
+                        event.scancode = kb::scancode::key_none;
                     }
-                    if (event.scancode == scancode::key_none)
+                    if (event.scancode == kb::scancode::key_none)
                     {
                         std::cerr << "ERROR: unhandled key: " << sdl_event.key.keysym.scancode << "\n";
                     }

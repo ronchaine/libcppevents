@@ -22,7 +22,7 @@ namespace cppevents
         subtype type;
 
         uint32_t keyboard_instance = 0;
-        scancode scancode;
+        kb::scancode scancode;
     };
 
     struct mouse_button

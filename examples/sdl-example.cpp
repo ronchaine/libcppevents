@@ -47,7 +47,7 @@ int main()
         else
             std::cout << "released\n";
 
-        if (event.scancode == cppevents::scancode::key_esc)
+        if (event.scancode == cppevents::kb::scancode::key_esc)
         {
             SDL_Quit();
             std::exit(0);

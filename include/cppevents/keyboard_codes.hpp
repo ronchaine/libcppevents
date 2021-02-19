@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-namespace cppevents
+namespace cppevents::kb
 {
     /*!
      *  \brief enumeration for keyboard scancodes
