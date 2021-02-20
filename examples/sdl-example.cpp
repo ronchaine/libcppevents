@@ -1,4 +1,4 @@
-// Example for SDL events
+// Example for handling SDL events
 #include <cppevents/sdl2.hpp>
 #include <iostream>
 
@@ -28,6 +28,7 @@ int main()
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+
     // Here we add SDL window as an event source, after this
     // libcppevents can handle events coming from SDL,
 
@@ -56,6 +57,7 @@ int main()
         }
     };
 
+
     // tell that when a keyboard event happens, we want it to be sent
     // to the keyboard_handler function
     cppevents::on_event<cppevents::keyboard_event>(keyboard_handler);
@@ -81,6 +83,7 @@ int main()
 
     SDL_RenderPresent(renderer);
     SDL_UpdateWindowSurface(window);
+
     while(true)
     {
         // here we wait until we get an event
