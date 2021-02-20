@@ -10,6 +10,11 @@
 #include <cstdint>
 #include <functional>
 
+namespace cppevents::source
+{
+    using unspecified = void;
+}
+
 namespace cppevents
 {
     struct event_details

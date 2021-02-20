@@ -4,7 +4,12 @@
  *  \author     Jari Ronkainen
  *  \version    0.7
  *
- *  \todo Windows support
+ *  This is horrible.
+ *
+ *  Please rewrite in entiriety, the PIMPL approach
+ *  I still like for ABI stability (even with different
+ *  backend versions!)
+ *
  */
 #ifndef LIBCPPEVENT_EVENTS_HPP
 #define LIBCPPEVENT_EVENTS_HPP
@@ -75,11 +80,22 @@ namespace cppevents
     //! Default event queue type, generally used if no other queue is specified
     inline event_queue default_queue;
 
-    template <typename Source, typename T> requires (not std::is_fundamental<T>::value) && (not std::is_pointer<T>::value)
+    template <typename Source_Tag, typename T> requires (not std::is_fundamental<T>::value) && (not std::is_pointer<T>::value)
     error_code add_source(T&, event_queue& = default_queue);
 
-    template <typename Source, typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
+    template <typename Source_Tag, typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
     error_code add_source(T, event_queue& = default_queue);
+
+    template <typename T> requires (not std::is_fundamental<T>::value) && (not std::is_pointer<T>::value)
+    error_code add_source(T& t, event_queue& eq = default_queue) {
+        return add_source<source::unspecified>(t, eq);
+    }
+
+    template <typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
+    error_code add_source(T t, event_queue& eq = default_queue) {
+        return add_source<source::unspecified>(t, eq);
+    }
+
 
     template <typename... Types>
     void on_event(event_callback_type callback, event_queue& = default_queue)
