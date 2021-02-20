@@ -7,7 +7,7 @@
 #ifndef LIBCPPEVENTS_INPUT_HPP
 #define LIBCPPEVENTS_INPUT_HPP
 
-#include "events.hpp"
+#include "event_queue.hpp"
 #include "keyboard_codes.hpp"
 
 namespace cppevents::event_groups

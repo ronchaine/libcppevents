@@ -9,7 +9,7 @@
 #ifndef LIBCPPEVENTS_NETWORK_HPP
 #define LIBCPPEVENTS_NETWORK_HPP
 
-#include "events.hpp"
+#include "event_queue.hpp"
 
 #include <string>
 

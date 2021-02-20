@@ -1,7 +1,7 @@
 #ifndef LIBCPPEVENTS_WINDOW_HPP
 #define LIBCPPEVENTS_WINDOW_HPP
 
-#include "events.hpp"
+#include "event_queue.hpp"
 #include "input.hpp"
 
 namespace cppevents::event_group

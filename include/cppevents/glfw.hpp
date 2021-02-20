@@ -6,7 +6,7 @@
 
 #include "input.hpp"
 #include "window.hpp"
-#include "events.hpp"
+#include "event_queue.hpp"
 
 #include <iostream>
 

@@ -1,7 +1,7 @@
 #ifndef LIBCPPEVENTS_FILESYSTEM_HPP
 #define LIBCPPEVENTS_FILESYSTEM_HPP
 
-#include "events.hpp"
+#include "event_queue.hpp"
 
 namespace cppevents
 {

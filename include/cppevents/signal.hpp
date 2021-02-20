@@ -7,7 +7,7 @@
 #ifndef LIBCPPEVENTS_SIGNAL_HPP
 #define LIBCPPEVENTS_SIGNAL_HPP
 
-#include "events.hpp"
+#include "event_queue.hpp"
 
 namespace cppevents
 {

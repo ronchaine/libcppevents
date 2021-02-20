@@ -1,5 +1,4 @@
-/*!
- *  \file       event-queue-linux.cpp
+/*
  *  \brief      Event queue implementation for linux/epoll
  *  \author     Jari Ronkainen
  *  \version    0.8
@@ -11,7 +10,7 @@
  *  in one file, this might be renamed to -posix and kqueue
  *  and whatever OS X uses added here with ifdefs
  */
-#include <cppevents/events.hpp>
+#include <cppevents/event_queue.hpp>
 
 #include <unordered_map>
 #include <queue>
@@ -32,19 +31,18 @@ namespace cppevents
             implementation();
             ~implementation();
 
-            void on_event(event_details, event_callback_type);
+            void on_event(event_details, callback_type);
 
             void wait(std::chrono::milliseconds timeout);
             void poll();
 
             error_code add_native_source(native_source_type fd, translator_type func, destructor_type);
-            error_code add_edge_triggered_native_source(native_source_type fd, translator_type func, destructor_type);
             void remove_native_source(native_source_type fd);
 
             error_code send_event(event_details, raw_event);
 
         private:
-            std::unordered_map<event_details, std::deque<event_callback_type>> events;
+            std::unordered_map<event_details, std::deque<callback_type>> events;
 
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
@@ -55,21 +53,19 @@ namespace cppevents
     };
 
     // event_queue forwarders
-    void event_queue::on_event(event_details evtype, event_callback_type evcallback) { impl->on_event(evtype, evcallback); }
+    void event_queue::on_event(event_details evtype,callback_type evcallback) noexcept { impl->on_event(evtype, evcallback); }
 
     void event_queue::wait(std::chrono::milliseconds timeout) { impl->wait(timeout); }
     void event_queue::poll() { impl->poll(); }
 
     error_code event_queue::add_native_source(native_source_type evdesc, translator_type func, destructor_type rfunc)
     { return impl->add_native_source(evdesc, func, rfunc); }
-    error_code event_queue::add_edge_triggered_native_source(native_source_type evdesc, translator_type func, destructor_type rfunc)
-    { return impl->add_native_source(evdesc, func, rfunc); }
-    void event_queue::remove_native_source(native_source_type evdesc) { return impl->remove_native_source(evdesc); }
 
-    error_code event_queue::send_event(event_details type, raw_event ev) { return impl->send_event(type, std::move(ev)); }
+    void event_queue::send_event(event_details type, raw_event ev) { impl->send_event(type, std::move(ev)); }
+
 
     // Actual implementation
-    event_queue::event_queue() : impl(std::make_unique<implementation>()) {}
+    event_queue::event_queue() noexcept : impl(std::make_unique<implementation>()) {}
     event_queue::~event_queue() = default;
 
     event_queue::implementation::implementation()
@@ -99,7 +95,7 @@ namespace cppevents
      * \param   evtype  type ID for the event for which the action will be triggered
      * \param   evcall  function to be called when the event happens
      */
-    void event_queue::implementation::on_event(event_details evtype, event_callback_type evcall)
+    void event_queue::implementation::on_event(event_details evtype, callback_type evcall)
     {
         events[evtype].emplace_back(std::move(evcall));
     }
@@ -197,7 +193,7 @@ namespace cppevents
     }
 }
 /*
-    Copyright (c) 2020 Jari Ronkainen
+    Copyright (c) 2021 Jari Ronkainen
 
     This software is provided 'as-is', without any express or implied warranty.
     In no event will the authors be held liable for any damages arising from the
