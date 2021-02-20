@@ -42,7 +42,8 @@ namespace cppevents
             error_code send_event(event_details, raw_event);
 
         private:
-            std::unordered_map<event_details::id_type, std::deque<callback_type>> events;
+            std::unordered_map<event_details::id_type, std::deque<callback_type>> event_mappings;
+            std::unordered_map<event_details::id_type, std::deque<callback_type>> group_mappings;
 
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
@@ -98,7 +99,7 @@ namespace cppevents
      */
     void event_queue::implementation::bind_event_to_func(event_details::id_type evtype, callback_type evcall)
     {
-        events[evtype].emplace_back(std::move(evcall));
+        event_mappings[evtype].emplace_back(std::move(evcall));
     }
 
     /**
@@ -135,7 +136,7 @@ namespace cppevents
                 continue;
             }
 
-            for (auto& callback : events[ev.type()])
+            for (auto& callback : event_mappings[ev.type()])
                 callback(ev);
         }
 
@@ -157,7 +158,7 @@ namespace cppevents
     error_code event_queue::implementation::send_event(event_details type, raw_event ev)
     {
         (void)type;
-        for (auto& callback : events[ev.type()])
+        for (auto& callback : event_mappings[ev.type()])
             callback(ev);
 
         eventfd_write(notify_fd, 1);
