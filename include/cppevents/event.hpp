@@ -118,7 +118,7 @@ namespace cppevents
             }
 
             //! Get event type id for this event
-            event_details type() const noexcept { return details; }
+            event_details::id_type type() const noexcept { return details.event_id; }
 
             raw_event& operator=(raw_event&& other) noexcept
             {
@@ -285,7 +285,7 @@ namespace cppevents
         using raw_type = typename std::remove_cvref<T>::type;
 
         raw_type* ptr = reinterpret_cast<raw_type*>(raw_event::preferred_handler<raw_type>::handle(detail::handler_action::get, &ev, nullptr));
-        assert(get_event_details_for<T>() == ev.type());
+        assert(get_event_details_for<T>().event_id == ev.type());
         assert(ptr != nullptr);
 
         return *ptr;

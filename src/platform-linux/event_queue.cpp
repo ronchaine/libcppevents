@@ -31,7 +31,7 @@ namespace cppevents
             implementation();
             ~implementation();
 
-            void on_event(event_details, callback_type);
+            void bind_event_to_func(event_details::id_type, callback_type);
 
             void wait(std::chrono::milliseconds timeout);
             void poll();
@@ -42,7 +42,7 @@ namespace cppevents
             error_code send_event(event_details, raw_event);
 
         private:
-            std::unordered_map<event_details, std::deque<callback_type>> events;
+            std::unordered_map<event_details::id_type, std::deque<callback_type>> events;
 
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
@@ -53,7 +53,8 @@ namespace cppevents
     };
 
     // event_queue forwarders
-    void event_queue::on_event(event_details evtype,callback_type evcallback) noexcept { impl->on_event(evtype, evcallback); }
+    void event_queue::bind_event_to_func(event_details::id_type evtype,callback_type evcallback) noexcept
+    { impl->bind_event_to_func(evtype, evcallback); }
 
     void event_queue::wait(std::chrono::milliseconds timeout) { impl->wait(timeout); }
     void event_queue::poll() { impl->poll(); }
@@ -95,7 +96,7 @@ namespace cppevents
      * \param   evtype  type ID for the event for which the action will be triggered
      * \param   evcall  function to be called when the event happens
      */
-    void event_queue::implementation::on_event(event_details evtype, callback_type evcall)
+    void event_queue::implementation::bind_event_to_func(event_details::id_type evtype, callback_type evcall)
     {
         events[evtype].emplace_back(std::move(evcall));
     }
@@ -128,7 +129,7 @@ namespace cppevents
 
             raw_event ev = event_translators[native_event[i].data.fd](native_event[i].data.fd);
 
-            if (get_event_details_for<empty_event>() == ev.type())
+            if (get_event_details_for<empty_event>().event_id == ev.type())
             {
                 ignored_events++;
                 continue;

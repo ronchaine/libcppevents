@@ -28,10 +28,8 @@ namespace cppevents
             template <typename T, typename... Rest>
             void on_event(callback_type) noexcept;
 
-            void on_event(event_details, callback_type) noexcept;
-
-            void bind_group_to_func(event_details::id_type, callback_type);
-            void bind_event_to_func(event_details::id_type, callback_type);
+            void bind_group_to_func(event_details::id_type, callback_type) noexcept;
+            void bind_event_to_func(event_details::id_type, callback_type) noexcept;
 
             void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(-1));
             void poll();
@@ -55,7 +53,7 @@ namespace cppevents
     template <typename T, typename... Rest>
     void event_queue::on_event(callback_type func) noexcept
     {
-        on_event(get_event_details_for<T>(), func);
+        bind_event_to_func(get_event_details_for<T>().event_id, func);
 
         if constexpr (sizeof...(Rest) > 0)
             on_event<Rest...>(func);
@@ -83,6 +81,11 @@ namespace cppevents
     template <typename... Types>
     void on_event(event_queue::callback_type func, event_queue& = default_queue) {
         default_queue.on_event<Types...>(func);
+    }
+
+    template <typename T> requires requires (T t) { T::event_group; }
+    void on_event(event_queue::callback_type func, event_queue& = default_queue) {
+        default_queue.bind_group_to_func(get_event_group_id_for<T>(), func);
     }
 
     inline void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(-1)) { default_queue.wait(timeout); }
