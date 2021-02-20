@@ -32,10 +32,12 @@ namespace cppevents::detail
             case SDL_WINDOWEVENT_CLOSE:
                 {
                     window_event event;
+                    /*
                     event.window_id = sdl_event.window.windowID;
                     event.type = event.subtype::close;
                     event.x = 0;
                     event.y = 0;
+                    */
                     send_event(event);
                     return;
                 }
@@ -180,10 +182,12 @@ namespace cppevents::detail
 
                     // FIXME: HACK, remove this and do something smarter
                     window_event event;
+                    /*
                     event.window_id = ev.window.windowID;
                     event.type = event.subtype::close;
                     event.x = 0;
                     event.y = 0;
+                    */
                     send_event(event);
 
                     return empty_event{};

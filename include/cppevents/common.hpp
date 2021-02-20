@@ -36,6 +36,10 @@ namespace cppevents
      */
     struct empty_event{};
 
+    /*!
+     */
+    struct cppevent_group_tag{};
+
     template <typename T>
     class badge
     {

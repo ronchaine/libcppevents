@@ -10,15 +10,15 @@
 #include "events.hpp"
 #include "keyboard_codes.hpp"
 
-namespace cppevents::event_group
+namespace cppevents::event_groups
 {
-    struct input {};
+    struct input : cppevent_group_tag {};
 }
 namespace cppevents
 {
     struct input_event
     {
-        using group = event_group::input;
+        using group = event_groups::input;
     };
 
     struct keyboard_event : input_event
@@ -36,7 +36,7 @@ namespace cppevents
 
     struct mouse_button
     {
-        using group = event_group::input;
+        using group = event_groups::input;
 
         enum action_t : uint32_t {
             button_down,
@@ -90,8 +90,6 @@ namespace cppevents
     struct controller_event
     {
     };
-
-    struct input { using event_type = void; };
 }
 
 #endif
