@@ -16,18 +16,19 @@ namespace cppevents::event_group
 }
 namespace cppevents
 {
-
-    struct keyboard_event
+    struct input_event
     {
         using group = event_group::input;
+    };
 
-
-        enum subtype : uint32_t {
+    struct keyboard_event : input_event
+    {
+        enum action_t : uint32_t {
             key_down,
             key_up,
         };
 
-        subtype type;
+        action_t action;
 
         uint32_t keyboard_instance = 0;
         kb::scancode scancode;
@@ -35,12 +36,14 @@ namespace cppevents
 
     struct mouse_button
     {
-        enum subtype : uint32_t {
+        using group = event_group::input;
+
+        enum action_t : uint32_t {
             button_down,
             button_up,
         };
 
-        subtype type;
+        action_t action;
 
         uint32_t mouse_instance = 0;
 
@@ -72,22 +75,20 @@ namespace cppevents
 
     struct touch
     {
-        enum subtype : uint32_t {
-            motion,
+        enum action_t : uint32_t {
             press,
             release,
-            gesture
         };
 
-        subtype type;
+        action_t action;
+    };
+
+    struct touch_gesture
+    {
     };
 
     struct controller_event
     {
-        enum subtype : uint32_t {
-        };
-
-        subtype type;
     };
 
     struct input { using event_type = void; };

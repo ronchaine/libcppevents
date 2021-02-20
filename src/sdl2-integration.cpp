@@ -73,7 +73,7 @@ namespace cppevents::detail
             case SDL_KEYUP:
                 { // make this different scope
                     keyboard_event event;
-                    event.type = sdl_event.type == SDL_KEYDOWN ? keyboard_event::key_down : keyboard_event::key_up;
+                    event.action = sdl_event.type == SDL_KEYDOWN ? keyboard_event::key_down : keyboard_event::key_up;
                     if (sdl_event.key.keysym.scancode <= 0xE7)
                     {
                         event.scancode = static_cast<kb::scancode>(sdl_event.key.keysym.scancode);
@@ -102,7 +102,7 @@ namespace cppevents::detail
             case SDL_MOUSEBUTTONUP:
                 {
                     mouse_button event;
-                    event.type = sdl_event.type == SDL_MOUSEBUTTONDOWN ? mouse_button::button_down : mouse_button::button_up;
+                    event.action = sdl_event.type == SDL_MOUSEBUTTONDOWN ? mouse_button::button_down : mouse_button::button_up;
                     event.mouse_instance = sdl_event.button.which;
                     event.button = sdl_event.button.button;
                     event.click_count = sdl_event.button.clicks;
@@ -240,7 +240,7 @@ namespace cppevents
     }
 
     // Specialise cppevents templates
-    template <> error_code add_source<cppevents::window_event, SDL_Window*>(
+    template <> error_code add_source<cppevents::source::unspecified, SDL_Window*>(
         SDL_Window* window,
         event_queue& queue)
     {
