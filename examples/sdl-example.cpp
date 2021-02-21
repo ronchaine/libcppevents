@@ -42,10 +42,10 @@ int main()
     auto keyboard_handler = [&](cppevents::raw_event& raw) {
         // Couldn't figure out a way to get rid of this cast,
         // even though it's redundant, sorry.
-        auto event = event_cast<cppevents::keyboard_event>(raw);
+        auto event = event_cast<cppevents::event::keyboard>(raw);
 
         std::cout << "Key " << static_cast<uint32_t>(event.scancode) << " ";
-        if (event.action == cppevents::keyboard_event::key_down)
+        if (event.action == cppevents::event::keyboard::key_down)
             std::cout << "pressed\n";
         else
             std::cout << "released\n";
@@ -60,20 +60,20 @@ int main()
 
     // tell that when a keyboard event happens, we want it to be sent
     // to the keyboard_handler function
-    cppevents::on_event<cppevents::keyboard_event>(keyboard_handler);
+    cppevents::on_event<cppevents::event::keyboard>(keyboard_handler);
 
     // using the lambda directly with mouse motion events
-    cppevents::on_event<cppevents::mouse_motion>([&](cppevents::raw_event& raw){
-        auto event = event_cast<cppevents::mouse_motion>(raw);
+    cppevents::on_event<cppevents::event::mouse_motion>([&](cppevents::raw_event& raw){
+        auto event = event_cast<cppevents::event::mouse_motion>(raw);
         std::cout << "Mouse moved by " << event.x_relative << "," << event.y_relative << " to " << event.x_pixels << "," << event.y_pixels << "\n";
     });
 
     // ditto with buttons
-    cppevents::on_event<cppevents::mouse_button>([&](cppevents::raw_event& raw){
-        auto event = event_cast<cppevents::mouse_button>(raw);
+    cppevents::on_event<cppevents::event::mouse_button>([&](cppevents::raw_event& raw){
+        auto event = event_cast<cppevents::event::mouse_button>(raw);
 
         std::cout << "Mouse " << event.mouse_instance << " button " << static_cast<uint32_t>(event.button) << " ";
-        if (event.action == cppevents::mouse_button::button_down)
+        if (event.action == cppevents::event::mouse_button::button_down)
             std::cout << "pressed ";
         else
             std::cout << "released ";

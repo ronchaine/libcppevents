@@ -14,14 +14,14 @@ namespace cppevents::event_groups
 {
     struct input : cppevent_group_tag {};
 }
-namespace cppevents
+namespace cppevents::event
 {
-    struct input_event
+    struct input
     {
         using event_group = event_groups::input;
     };
 
-    struct keyboard_event : input_event
+    struct keyboard : input
     {
         enum action_t : uint32_t {
             key_down,
@@ -34,10 +34,8 @@ namespace cppevents
         kb::scancode scancode;
     };
 
-    struct mouse_button
+    struct mouse_button : input
     {
-        using event_group = event_groups::input;
-
         enum action_t : uint32_t {
             button_down,
             button_up,
@@ -54,7 +52,7 @@ namespace cppevents
         int32_t y_pixels = 0;
     };
 
-    struct mouse_motion
+    struct mouse_motion : input
     {
         uint32_t mouse_instance = 0;
 
@@ -65,16 +63,18 @@ namespace cppevents
         int32_t y_relative = 0;
     };
 
-    struct mouse_wheel
+    struct mouse_wheel : input
     {
+
         uint32_t mouse_instance = 0;
 
         int32_t vertical_scroll = 0;
         int32_t horizontal_scroll = 0;
     };
 
-    struct touch
+    struct touch : input
     {
+
         enum action_t : uint32_t {
             press,
             release,
@@ -83,11 +83,11 @@ namespace cppevents
         action_t action;
     };
 
-    struct touch_gesture
+    struct touch_gesture : input
     {
     };
 
-    struct controller_event
+    struct controller : input
     {
     };
 }

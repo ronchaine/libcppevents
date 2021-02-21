@@ -74,51 +74,53 @@ namespace cppevents::detail
             case SDL_KEYDOWN:
             case SDL_KEYUP:
                 { // make this different scope
-                    keyboard_event event;
-                    event.action = sdl_event.type == SDL_KEYDOWN ? keyboard_event::key_down : keyboard_event::key_up;
+                    event::keyboard kbevent;
+                    kbevent.action = sdl_event.type == SDL_KEYDOWN ? event::keyboard::key_down : event::keyboard::key_up;
                     if (sdl_event.key.keysym.scancode <= 0xE7)
                     {
-                        event.scancode = static_cast<kb::scancode>(sdl_event.key.keysym.scancode);
+                        kbevent.scancode = static_cast<kb::scancode>(sdl_event.key.keysym.scancode);
                     } else {
-                        event.scancode = kb::scancode::key_none;
+                        kbevent.scancode = kb::scancode::key_none;
                     }
-                    if (event.scancode == kb::scancode::key_none)
+                    if (kbevent.scancode == kb::scancode::key_none)
                     {
                         std::cerr << "ERROR: unhandled key: " << sdl_event.key.keysym.scancode << "\n";
                     }
-                    send_event(event);
+                    send_event(kbevent);
                     return;
                 }
             case SDL_MOUSEMOTION:
                 {
-                    mouse_motion event;
-                    event.mouse_instance = sdl_event.motion.which;
-                    event.x_pixels = sdl_event.motion.x;
-                    event.y_pixels = sdl_event.motion.y;
-                    event.x_relative = sdl_event.motion.xrel;
-                    event.y_relative = sdl_event.motion.yrel;
-                    send_event(event);
+                    event::mouse_motion mevent;
+                    mevent.mouse_instance = sdl_event.motion.which;
+                    mevent.x_pixels = sdl_event.motion.x;
+                    mevent.y_pixels = sdl_event.motion.y;
+                    mevent.x_relative = sdl_event.motion.xrel;
+                    mevent.y_relative = sdl_event.motion.yrel;
+                    send_event(mevent);
                     return;
                 }
             case SDL_MOUSEBUTTONDOWN:
             case SDL_MOUSEBUTTONUP:
                 {
-                    mouse_button event;
-                    event.action = sdl_event.type == SDL_MOUSEBUTTONDOWN ? mouse_button::button_down : mouse_button::button_up;
-                    event.mouse_instance = sdl_event.button.which;
-                    event.button = sdl_event.button.button;
-                    event.click_count = sdl_event.button.clicks;
-                    event.x_pixels = sdl_event.button.x;
-                    event.y_pixels = sdl_event.button.y;
-                    send_event(event);
+                    event::mouse_button mevent;
+                    mevent.action = sdl_event.type == SDL_MOUSEBUTTONDOWN ? 
+                        event::mouse_button::button_down : 
+                        event::mouse_button::button_up;
+                    mevent.mouse_instance = sdl_event.button.which;
+                    mevent.button = sdl_event.button.button;
+                    mevent.click_count = sdl_event.button.clicks;
+                    mevent.x_pixels = sdl_event.button.x;
+                    mevent.y_pixels = sdl_event.button.y;
+                    send_event(mevent);
                     return;
                 }
             case SDL_FINGERMOTION:
             case SDL_FINGERDOWN:
             case SDL_FINGERUP:
                 {
-                    touch event{};
-                    send_event(event);
+                    event::touch tevent{};
+                    send_event(tevent);
                     return;
                 }
             default:

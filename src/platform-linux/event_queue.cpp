@@ -14,7 +14,7 @@
 
 #include <unordered_map>
 #include <queue>
-#include <deque>
+#include <vector>
 
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -42,8 +42,8 @@ namespace cppevents
             error_code send_event(event_details, raw_event);
 
         private:
-            std::unordered_map<event_details::id_type, std::deque<callback_type>> event_mappings;
-            std::unordered_map<event_details::id_type, std::deque<callback_type>> group_mappings;
+            std::unordered_map<event_details::id_type, std::vector<callback_type>> event_mappings;
+            std::unordered_map<event_details::id_type, std::vector<callback_type>> group_mappings;
 
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
