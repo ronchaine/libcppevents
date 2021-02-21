@@ -41,6 +41,7 @@ namespace cppevents
             
             // for adding new events
             error_code add_native_source(native_source_type, translator_type, destructor_type = nullptr);
+            void remove_native_source(native_source_type);
 
         private:
             class implementation;
