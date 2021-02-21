@@ -6,9 +6,6 @@
  *  Implementations for the event handling functions for
  *  linux/epoll
  *
- *  If it turns out to be simpler to handle all POSIX-systems
- *  in one file, this might be renamed to -posix and kqueue
- *  and whatever OS X uses added here with ifdefs
  */
 #include <cppevents/event_queue.hpp>
 
@@ -32,6 +29,7 @@ namespace cppevents
             ~implementation();
 
             void bind_event_to_func(event_details::id_type, callback_type);
+            void bind_group_to_func(event_details::id_type, callback_type);
 
             void wait(std::chrono::milliseconds timeout);
             void poll();
