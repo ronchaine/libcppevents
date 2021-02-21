@@ -20,6 +20,8 @@
 
 #include <iostream>
 
+using namespace std::chrono_literals;
+
 namespace cppevents
 {
     class event_queue::implementation
@@ -31,8 +33,7 @@ namespace cppevents
             void bind_event_to_func(event_details::id_type, callback_type);
             void bind_group_to_func(event_details::id_type, callback_type);
 
-            void wait(std::chrono::milliseconds timeout);
-            void poll();
+            void wait(std::chrono::milliseconds timeout, bool block = true);
 
             error_code add_native_source(native_source_type fd, translator_type func, destructor_type);
             void remove_native_source(native_source_type fd);
@@ -56,7 +57,7 @@ namespace cppevents
     { impl->bind_event_to_func(evtype, evcallback); }
 
     void event_queue::wait(std::chrono::milliseconds timeout) { impl->wait(timeout); }
-    void event_queue::poll() { impl->poll(); }
+    void event_queue::poll() { impl->wait(0s, true); }
 
     error_code event_queue::add_native_source(native_source_type evdesc, translator_type func, destructor_type rfunc)
     { return impl->add_native_source(evdesc, func, rfunc); }
@@ -103,19 +104,25 @@ namespace cppevents
     /**
      * Wait until an event is triggered
      */
-    void event_queue::implementation::wait(std::chrono::milliseconds timeout)
+    void event_queue::implementation::wait(std::chrono::milliseconds timeout, bool block)
     {
-        all_events_ignored:
         constexpr static int max_events = 16;
+        auto timeout_offset = 0ms;
+        auto start = std::chrono::system_clock::now();
+
+        restart_function:
+
         int event_count = 0;
         int ignored_events = 0;
 
         epoll_event native_event[max_events];
 
-        if (timeout.count() < 0)
+        if (not block)
+            event_count = epoll_wait(epoll_fd, native_event, max_events, 0);
+        else if (timeout.count() < 0)
             event_count = epoll_wait(epoll_fd, native_event, max_events, -1);
         else
-            event_count = epoll_wait(epoll_fd, native_event, max_events, timeout.count());
+            event_count = epoll_wait(epoll_fd, native_event, max_events, (timeout - timeout_offset).count());
 
         for (int i = 0; i < event_count; ++i)
         {
@@ -138,16 +145,11 @@ namespace cppevents
                 callback(ev);
         }
 
-        if (ignored_events == event_count)
-            goto all_events_ignored;
-    }
-
-    /**
-     * Poll if an event is triggered
-     */
-    void event_queue::implementation::poll()
-    {
-        // FIXME: implementation
+        if (ignored_events == event_count) {
+            timeout_offset = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now() - start);
+            goto restart_function;
+        }
     }
 
     /**

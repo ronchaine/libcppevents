@@ -1,4 +1,5 @@
 option('sdl2-integration', type: 'feature', value: 'auto', description: 'Build SDL2 integration library')
 option('glfw-integration', type: 'feature', value: 'auto', description: 'Build GLFW integration library')
 
+# for platform == linux
 option('linux-polling-system', type: 'combo', choices : ['epoll'], value : 'epoll')
