@@ -1,5 +1,4 @@
 /*!
- *  \file       input.hpp
  *  \brief      basic input event types for libcppevent
  *  \author     Jari Ronkainen
  *  \version    0.6
@@ -12,7 +11,7 @@
 
 namespace cppevents::event_groups
 {
-    struct input : cppevent_group_tag {};
+    struct input : cppevents_group_tag {};
 }
 namespace cppevents::event
 {

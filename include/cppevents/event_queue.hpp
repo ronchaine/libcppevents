@@ -25,9 +25,6 @@ namespace cppevents
             event_queue() noexcept;
             ~event_queue();
 
-            template <typename T, typename... Rest>
-            void on_event(callback_type) noexcept;
-
             void bind_group_to_func(event_details::id_type, callback_type) noexcept;
             void bind_event_to_func(event_details::id_type, callback_type) noexcept;
 
@@ -50,16 +47,6 @@ namespace cppevents
 
     inline event_queue default_queue;
 
-
-    template <typename T, typename... Rest>
-    void event_queue::on_event(callback_type func) noexcept
-    {
-        bind_event_to_func(get_event_details_for<T>().event_id, func);
-
-        if constexpr (sizeof...(Rest) > 0)
-            on_event<Rest...>(func);
-    }
-
     // Handling event sources
     template <typename Source_Tag, typename T> requires (not std::is_fundamental<T>::value) && (not std::is_pointer<T>::value)
     error_code add_source(T&, event_queue& = default_queue);
@@ -79,14 +66,16 @@ namespace cppevents
 
 
     // Acting on events
-    template <typename... Types>
+    template <typename T, typename... Types>
     void on_event(event_queue::callback_type func, event_queue& = default_queue) {
-        default_queue.on_event<Types...>(func);
-    }
+        if constexpr(is_group<T>::value) {
+            default_queue.bind_group_to_func(get_event_group_id_for<T>(), func);
+        } else {
+            default_queue.bind_event_to_func(get_event_details_for<T>().event_id, func);
+        }
 
-    template <typename T> requires requires (T t) { T::event_group; }
-    void on_event(event_queue::callback_type func, event_queue& = default_queue) {
-        default_queue.bind_group_to_func(get_event_group_id_for<T>(), func);
+        if constexpr (sizeof...(Types) > 0)
+            on_event<Types...>(func);
     }
 
     inline void wait(std::chrono::milliseconds timeout = std::chrono::milliseconds(-1)) { default_queue.wait(timeout); }

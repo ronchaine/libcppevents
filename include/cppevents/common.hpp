@@ -36,9 +36,14 @@ namespace cppevents
      */
     struct empty_event{};
 
-    /*!
+    /*
+     * derive from this to mark something as a group
      */
-    struct cppevent_group_tag{};
+    struct cppevents_group_tag {};
+
+    template <typename T>
+    struct is_group : std::is_base_of<cppevents_group_tag, T> {};
+
 
     template <typename T>
     class badge
@@ -53,6 +58,7 @@ namespace cppevents
         system_error    = 1,
         already_exists  = 2,
     };
+
 }
 
 namespace std

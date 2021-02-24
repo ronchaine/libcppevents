@@ -15,6 +15,8 @@
 
 #include "common.hpp"
 
+#include <iostream>
+
 namespace cppevents
 {
     class raw_event;
@@ -24,7 +26,9 @@ namespace cppevents
         using data_buffer_type = std::aligned_storage<3 * sizeof(void*), std::alignment_of<void*>::value>::type;
 
         inline std::atomic<event_details::id_type> event_id_counter = 0;
-        inline std::atomic<event_details::id_type> group_id_counter = 0;
+
+        // group 0 is "no group"
+        inline std::atomic<event_details::id_type> group_id_counter = 1;
 
         template <typename T> struct internal_event_handler;
         template <typename T> struct external_event_handler;
@@ -53,12 +57,18 @@ namespace cppevents
         static event_details::id_type ids = detail::group_id_counter++;
         return ids;
     }
+    template <typename T>
+    event_details::id_type get_event_type_id_for() {
+        static event_details::id_type ids = detail::event_id_counter++;
+        return ids;
+    }
 
     /*!
      *  \brief  Get an event_details for a template type
      *
      *  \return event_details for the type requested
      */
+
     template <typename T>
     event_details get_event_details_for()
     {
@@ -66,16 +76,16 @@ namespace cppevents
         static_assert(std::is_same_v<std::decay_t<T>, T>);
         static_assert(std::is_same_v<typename std::remove_cvref<T>::type, T>);
 
-        static event_details ids = {
+        event_details ids = {
             .group_id       = 0,
-            .event_id       = detail::event_id_counter++
+            .event_id       = get_event_type_id_for<T>(),
         };
 
         return ids;
     }
 
     template <typename T> requires requires (T t) {
-        T::group;
+        typename T::group;
     }
     event_details get_event_details_for()
     {
@@ -83,9 +93,9 @@ namespace cppevents
         static_assert(std::is_same_v<std::decay_t<T>, T>);
         static_assert(std::is_same_v<typename std::remove_cvref<T>::type, T>);
 
-        static event_details ids = {
-            .group_id       = get_event_group_id_for<T::group>,
-            .event_id       = detail::event_id_counter++
+        event_details ids = {
+            .group_id       = get_event_group_id_for<typename T::group>(),
+            .event_id       = get_event_type_id_for<T>(),
         };
 
         return ids;
@@ -119,6 +129,9 @@ namespace cppevents
 
             //! Get event type id for this event
             event_details::id_type type() const noexcept { return details.event_id; }
+
+            //! Get event group id
+            event_details::id_type group() const noexcept { return details.group_id; }
 
             raw_event& operator=(raw_event&& other) noexcept
             {

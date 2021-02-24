@@ -2,4 +2,7 @@ option('sdl2-integration', type: 'feature', value: 'auto', description: 'Build S
 option('glfw-integration', type: 'feature', value: 'auto', description: 'Build GLFW integration library')
 
 # for platform == linux
-option('linux-polling-system', type: 'combo', choices : ['epoll'], value : 'epoll')
+option('linux-polling-system', type: 'combo', choices : ['epoll'], value : 'epoll', description: '(linux-only)')
+
+# integration options
+option('sdl2-enable-wayland', type: 'boolean', value : 'true', description: '(linux-only)')

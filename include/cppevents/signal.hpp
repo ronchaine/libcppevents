@@ -13,6 +13,8 @@ namespace cppevents
 {
     struct signal_event
     {
+        using group = void;
+
         int signal_no   = -1;
         int sender_pid  = -1;
         int sender_uid  = -1;

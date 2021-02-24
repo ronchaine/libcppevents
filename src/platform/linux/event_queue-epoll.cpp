@@ -10,8 +10,6 @@
 #include <cppevents/event_queue.hpp>
 
 #include <unordered_map>
-#include <queue>
-#include <vector>
 
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -30,10 +28,9 @@ namespace cppevents
             implementation();
             ~implementation();
 
-            void bind_event_to_func(event_details::id_type, callback_type);
-            void bind_group_to_func(event_details::id_type, callback_type);
+            void bind_event_to_func(event_details::id_type, callback_type, bool = false) noexcept;
 
-            void wait(std::chrono::milliseconds timeout, bool block = true);
+            void wait(std::chrono::milliseconds timeout, bool block = true) noexcept;
 
             error_code add_native_source(native_source_type fd, translator_type func, destructor_type);
             void remove_native_source(native_source_type fd);
@@ -41,12 +38,21 @@ namespace cppevents
             error_code send_event(event_details, raw_event);
 
         private:
-            std::unordered_map<event_details::id_type, std::vector<callback_type>> event_mappings;
-            std::unordered_map<event_details::id_type, std::vector<callback_type>> group_mappings;
+            std::unordered_map<event_details::id_type, callback_type> event_mappings;
+            std::unordered_map<event_details::id_type, callback_type> group_mappings;
 
             // file descriptor to event translator
             std::unordered_map<int, translator_type> event_translators;
             std::unordered_map<int, destructor_type> event_destructors;
+
+            inline void call(raw_event& ev) {
+                if (event_mappings.contains(ev.type())) {
+                    event_mappings[ev.type()](ev);
+                }
+                if (group_mappings.contains(ev.group()) && ev.group() != 0) {
+                    group_mappings[ev.group()](ev);
+                }
+            }
 
             int epoll_fd = -1;
             int notify_fd = -1;
@@ -55,6 +61,9 @@ namespace cppevents
     // event_queue forwarders
     void event_queue::bind_event_to_func(event_details::id_type evtype,callback_type evcallback) noexcept
     { impl->bind_event_to_func(evtype, evcallback); }
+
+    void event_queue::bind_group_to_func(event_details::id_type evtype,callback_type evcallback) noexcept
+    { impl->bind_event_to_func(evtype, evcallback, true); }
 
     void event_queue::wait(std::chrono::milliseconds timeout) { impl->wait(timeout); }
     void event_queue::poll() { impl->wait(0s, true); }
@@ -73,15 +82,15 @@ namespace cppevents
     {
         epoll_fd = epoll_create1(0);
 
-        // used for messages with no real OS notification
+        // used for messages with no OS notification
         notify_fd = eventfd(0, 0);
 
         epoll_event ev{};
         ev.data.fd = notify_fd;
         ev.events = EPOLLIN | EPOLLET;
 
+        // figure out what to do with this
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, notify_fd, &ev) == -1) {}
-            ;
     }
 
     event_queue::implementation::~implementation()
@@ -96,15 +105,26 @@ namespace cppevents
      * \param   evtype  type ID for the event for which the action will be triggered
      * \param   evcall  function to be called when the event happens
      */
-    void event_queue::implementation::bind_event_to_func(event_details::id_type evtype, callback_type evcall)
+    void event_queue::implementation::bind_event_to_func(event_details::id_type evtype,
+                                                         callback_type evcall,
+                                                         bool is_group) noexcept
     {
-        event_mappings[evtype].emplace_back(std::move(evcall));
+        if (is_group)
+        {
+            std::cout << "binding group " << evtype << " to callback\n";
+            group_mappings[evtype] = std::move(evcall);
+        }
+        else
+        {
+            std::cout << "binding event " << evtype << " to callback\n";
+            event_mappings[evtype] = std::move(evcall);
+        }
     }
 
     /**
      * Wait until an event is triggered
      */
-    void event_queue::implementation::wait(std::chrono::milliseconds timeout, bool block)
+    void event_queue::implementation::wait(std::chrono::milliseconds timeout, bool block) noexcept
     {
         constexpr static int max_events = 16;
         auto timeout_offset = 0ms;
@@ -135,14 +155,15 @@ namespace cppevents
 
             raw_event ev = event_translators[native_event[i].data.fd](native_event[i].data.fd);
 
+            // empty events are special, since if we only get those,
+            // we do not break from blocking
             if (get_event_details_for<empty_event>().event_id == ev.type())
             {
                 ignored_events++;
                 continue;
             }
 
-            for (auto& callback : event_mappings[ev.type()])
-                callback(ev);
+            call(ev);
         }
 
         if (ignored_events == event_count) {
@@ -158,10 +179,9 @@ namespace cppevents
     error_code event_queue::implementation::send_event(event_details type, raw_event ev)
     {
         (void)type;
-        for (auto& callback : event_mappings[ev.type()])
-            callback(ev);
-
+        call(ev);
         eventfd_write(notify_fd, 1);
+
         return error_code::success;
     }
 

@@ -37,6 +37,7 @@ int main()
     cppevents::add_source<cppevents::source::unspecified>(window);
 
 
+
     //  Create a lambda function for handling keyboard events,
     //  this might as well be a normal function
     auto keyboard_handler = [&](cppevents::raw_event& raw) {
@@ -61,7 +62,6 @@ int main()
     // tell that when a keyboard event happens, we want it to be sent
     // to the keyboard_handler function
     cppevents::on_event<cppevents::event::keyboard>(keyboard_handler);
-
     // using the lambda directly with mouse motion events
     cppevents::on_event<cppevents::event::mouse_motion>([&](cppevents::raw_event& raw){
         auto event = event_cast<cppevents::event::mouse_motion>(raw);
@@ -79,6 +79,11 @@ int main()
             std::cout << "released ";
 
         std::cout << "at " << event.x_pixels << "," << event.y_pixels << "\n";
+    });
+
+    cppevents::on_event<cppevents::event_group::window>([&](cppevents::raw_event& raw){
+        (void)raw;
+        std::cout << "some window event\n";
     });
 
     SDL_RenderPresent(renderer);

@@ -1,5 +1,4 @@
 /*!
- *  \file       sdl2-integration.cpp
  *  \brief      SDL2 integration for libcppevents
  *  \author     Jari Ronkainen
  *  \version    0.7
@@ -27,36 +26,78 @@ namespace cppevents::detail
      */
     static void translate_sdl_window_event(SDL_Event& sdl_event)
     {
-        switch (sdl_event.type)
+        switch (sdl_event.window.event)
         {
             case SDL_WINDOWEVENT_CLOSE:
                 {
-                    window_event event;
-                    /*
-                    event.window_id = sdl_event.window.windowID;
-                    event.type = event.subtype::close;
-                    event.x = 0;
-                    event.y = 0;
-                    */
-                    send_event(event);
+                    event::window_closed wevent;
+                    wevent.window_id = sdl_event.window.windowID;
+                    send_event(wevent);
                     return;
                 }
             case SDL_WINDOWEVENT_SHOWN:
             case SDL_WINDOWEVENT_HIDDEN:
             case SDL_WINDOWEVENT_EXPOSED:
-            case SDL_WINDOWEVENT_MOVED:
-            case SDL_WINDOWEVENT_RESIZED:
-            case SDL_WINDOWEVENT_SIZE_CHANGED:
+            case SDL_WINDOWEVENT_RESTORED:
             case SDL_WINDOWEVENT_MINIMIZED:
             case SDL_WINDOWEVENT_MAXIMIZED:
-            case SDL_WINDOWEVENT_RESTORED:
+                {
+                    event::window_visibility wevent;
+                    wevent.window_id = sdl_event.window.windowID;
+                    wevent.type = sdl_event.type == SDL_WINDOWEVENT_SHOWN ? event::window_visibility::shown :
+                                  sdl_event.type == SDL_WINDOWEVENT_HIDDEN ? event::window_visibility::hidden :
+                                  sdl_event.type == SDL_WINDOWEVENT_EXPOSED ? event::window_visibility::exposed :
+                                  sdl_event.type == SDL_WINDOWEVENT_MAXIMIZED ? event::window_visibility::maximized :
+                                  sdl_event.type == SDL_WINDOWEVENT_MINIMIZED ? event::window_visibility::minimized :
+                                  event::window_visibility::restored;
+                    send_event(wevent);
+                    return;
+                }
+            case SDL_WINDOWEVENT_MOVED:
+                {
+                    event::window_moved wevent;
+                    wevent.window_id = sdl_event.window.windowID;
+                    wevent.x = sdl_event.window.data1;
+                    wevent.y = sdl_event.window.data2;
+                    send_event(wevent);
+                    return;
+                }
+            case SDL_WINDOWEVENT_RESIZED:
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
+                {
+                    event::window_size_change wevent;
+                    wevent.window_id = sdl_event.window.windowID;
+                    wevent.width = sdl_event.window.data1;
+                    wevent.height = sdl_event.window.data2;
+                    send_event(wevent);
+                    return;
+                }
             case SDL_WINDOWEVENT_ENTER:
             case SDL_WINDOWEVENT_LEAVE:
+                {
+                    event::window_mouse_status wevent;
+                    wevent.window_id = sdl_event.window.windowID;
+                    wevent.type = sdl_event.type == SDL_WINDOWEVENT_ENTER ?
+                        event::window_mouse_status::entered :
+                        event::window_mouse_status::exited;
+                    send_event(wevent);
+                    return;
+                }
             case SDL_WINDOWEVENT_FOCUS_GAINED:
             case SDL_WINDOWEVENT_FOCUS_LOST:
+                {
+                    event::window_focus_change wevent;
+                    wevent.window_id = sdl_event.window.windowID;
+                    wevent.type = sdl_event.type == SDL_WINDOWEVENT_FOCUS_GAINED ? event::window_focus_change::focus_gained :
+                                  sdl_event.type == SDL_WINDOWEVENT_TAKE_FOCUS ? event::window_focus_change::focus_offered :
+                                  event::window_focus_change::focus_lost;
+                    send_event(wevent);
+                    return;
+                }
             case SDL_WINDOWEVENT_TAKE_FOCUS:
             case SDL_WINDOWEVENT_HIT_TEST:
             default:
+                std::cerr << "ERROR: unhandled SDL window event " << sdl_event.window.event << "\n";
                 break;
         }
     }
@@ -73,7 +114,7 @@ namespace cppevents::detail
         {
             case SDL_KEYDOWN:
             case SDL_KEYUP:
-                { // make this different scope
+                {
                     event::keyboard kbevent;
                     kbevent.action = sdl_event.type == SDL_KEYDOWN ? event::keyboard::key_down : event::keyboard::key_up;
                     if (sdl_event.key.keysym.scancode <= 0xE7)
@@ -138,7 +179,7 @@ namespace cppevents::detail
      *  This is less error-prone in cases where many events
      *  are received in a small amount of time
      */
-    raw_event create_sdl_window_event(native_source_type fd)
+    raw_event create_sdl_event(native_source_type fd)
     {
         (void)fd;
 
@@ -180,19 +221,8 @@ namespace cppevents::detail
                 case SDL_TEXTEDITING:
                     std::cout << "sdl text input\n";
                     continue;
+
                 case SDL_QUIT:
-
-                    // FIXME: HACK, remove this and do something smarter
-                    window_event event;
-                    /*
-                    event.window_id = ev.window.windowID;
-                    event.type = event.subtype::close;
-                    event.x = 0;
-                    event.y = 0;
-                    */
-                    send_event(event);
-
-                    return empty_event{};
                 default:
                     std::cerr << "ERROR: unhandled SDL event type " << ev.type << "\n";
                     continue;
@@ -250,9 +280,8 @@ namespace cppevents
         SDL_Window* window,
         event_queue& queue)
     {
-        std::cout << "adding native sdl source\n";
         cppevents::native_source_type src = cppevents::get_sdl_event_source(window);
-        queue.add_native_source(src, cppevents::detail::create_sdl_window_event);
+        queue.add_native_source(src, cppevents::detail::create_sdl_event);
 
         return error_code::success;
     }
