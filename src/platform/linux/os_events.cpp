@@ -102,6 +102,19 @@ namespace cppevents
         */
         return error_code::success;
     }
+
+    template <> error_code add_source<cppevents::source::unspecified, timer>(
+        timer&& window,
+        event_queue& queue)
+    {
+        (void)window;
+        (void)queue;
+        /*
+        cppevents::native_source_type src = cppevents::get_sdl_event_source(window);
+        queue.add_native_source(src, cppevents::detail::create_sdl_event);
+        */
+        return error_code::success;
+    }
 }
 /*
     Copyright (c) 2020 Jari Ronkainen

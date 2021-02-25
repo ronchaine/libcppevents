@@ -54,6 +54,9 @@ namespace cppevents
     template <typename Source_tag, typename T> requires (not std::is_pointer<T>::value)
     error_code add_source(T&, event_queue& = default_queue);
 
+    template <typename Source_tag, typename T> requires (not std::is_pointer<T>::value) && (not std::is_lvalue_reference<T>::value)
+    error_code add_source(T&&, event_queue& = default_queue);
+
     template <typename T>
     error_code add_source(T&& t, event_queue& eq = default_queue) {
         return add_source<source::unspecified>(std::forward<T>(t), eq);
