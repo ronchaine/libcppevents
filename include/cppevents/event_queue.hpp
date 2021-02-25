@@ -48,22 +48,16 @@ namespace cppevents
     inline event_queue default_queue;
 
     // Handling event sources
-    template <typename Source_Tag, typename T> requires (not std::is_fundamental<T>::value) && (not std::is_pointer<T>::value)
-    error_code add_source(T&, event_queue& = default_queue);
-
-    template <typename Source_tag, typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
+    template <typename Source_Tag, typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
     error_code add_source(T, event_queue& = default_queue);
 
-    template <typename T> requires (not std::is_fundamental<T>::value) && (not std::is_pointer<T>::value)
-    error_code add_source(T& t, event_queue& eq = default_queue) {
-        return add_source<source::unspecified>(t, eq);
-    }
+    template <typename Source_tag, typename T> requires (not std::is_pointer<T>::value)
+    error_code add_source(T&, event_queue& = default_queue);
 
-    template <typename T> requires std::is_fundamental<T>::value || std::is_pointer<T>::value
-    error_code add_source(T t, event_queue& eq = default_queue) {
-        return add_source<source::unspecified>(t, eq);
+    template <typename T>
+    error_code add_source(T&& t, event_queue& eq = default_queue) {
+        return add_source<source::unspecified>(std::forward<T>(t), eq);
     }
-
 
     // Acting on events
     template <typename T, typename... Types>
