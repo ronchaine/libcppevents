@@ -7,6 +7,8 @@ namespace cppevents::event
 {
     struct timer {
         int timer_id;
+        uint64_t expirations;
+        bool last_tick;
     };
 }
 
@@ -28,14 +30,16 @@ namespace cppevents
             auto nanosecs = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
             auto secs = std::chrono::duration_cast<std::chrono::seconds>(duration);
 
-            seconds = (secs - nanosecs).count();
             nanoseconds = nanosecs.count();
+            if (secs.count() > 0)
+                nanoseconds -= std::chrono::duration_cast<std::chrono::nanoseconds>(secs).count();
+            seconds = secs.count();
         }
 
-        uint64_t seconds;
-        uint64_t nanoseconds;
+        uint64_t seconds = 0;
+        uint64_t nanoseconds = 0;
 
-        int id;
+        int id = 0;
         int repeats;
     };
 }

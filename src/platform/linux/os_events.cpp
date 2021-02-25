@@ -89,30 +89,60 @@ namespace cppevents
         return error_code::success;
     }
 
+    raw_event create_timer_event(int fd)
+    {
+        event::timer ev;
+
+        uint64_t exp;
+
+        read(fd, &exp, sizeof(uint64_t));
+
+        ev.expirations = exp;
+
+        return ev;
+    }
+
+    void delete_timer_event(int fd)
+    {
+        close(fd);
+    }
+
+    void do_stuff(timer& timer_conf, event_queue& queue)
+    {
+        itimerspec tp{};
+
+        std::cout << "assign timer: " << timer_conf.seconds << "s\n";
+        std::cout << "assign timer: " << timer_conf.nanoseconds << "ns\n";
+
+        tp.it_interval.tv_nsec = timer_conf.nanoseconds;
+        tp.it_interval.tv_sec = timer_conf.seconds;
+
+        tp.it_value.tv_nsec = timer_conf.nanoseconds;
+        tp.it_value.tv_sec = timer_conf.seconds; // immediately start the timer
+
+        int timerfd = timerfd_create(CLOCK_MONOTONIC, 0);
+
+        int error = timerfd_settime(timerfd, 0, &tp, NULL);
+
+        if (error)
+            std::cout << "timerfd_settime: " << error << " / " << errno << "\n";;
+
+        queue.add_native_source(timerfd, create_timer_event, delete_timer_event);
+    }
 
     template <> error_code add_source<cppevents::source::unspecified, timer>(
-        timer& window,
+        timer& timer_conf,
         event_queue& queue)
     {
-        (void)window;
-        (void)queue;
-        /*
-        cppevents::native_source_type src = cppevents::get_sdl_event_source(window);
-        queue.add_native_source(src, cppevents::detail::create_sdl_event);
-        */
+        do_stuff(timer_conf, queue);
         return error_code::success;
     }
 
     template <> error_code add_source<cppevents::source::unspecified, timer>(
-        timer&& window,
+        timer&& timer_conf,
         event_queue& queue)
     {
-        (void)window;
-        (void)queue;
-        /*
-        cppevents::native_source_type src = cppevents::get_sdl_event_source(window);
-        queue.add_native_source(src, cppevents::detail::create_sdl_event);
-        */
+        do_stuff(timer_conf, queue);
         return error_code::success;
     }
 }
