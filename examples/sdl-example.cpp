@@ -37,7 +37,6 @@ int main()
     cppevents::add_source<cppevents::source::unspecified>(window);
 
 
-
     //  Create a lambda function for handling keyboard events,
     //  this might as well be a normal function
     auto keyboard_handler = [&](cppevents::raw_event& raw) {

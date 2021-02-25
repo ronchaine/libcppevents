@@ -12,3 +12,11 @@ if sdl2_dep.found()
     ]
   )
 endif
+
+executable(
+  'timer-example',
+  'timer-example.cpp',
+  dependencies : [
+    cppevents_dep,
+  ]
+)

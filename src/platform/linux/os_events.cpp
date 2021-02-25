@@ -25,13 +25,13 @@ namespace cppevents
 
     raw_event create_signal_event(int fd)
     {
-        signal_event ev;
+        event::signal ev;
 
         struct signalfd_siginfo siginfo;
         ssize_t bytes = read(fd, &siginfo, sizeof(struct signalfd_siginfo));
 
         if (bytes != sizeof(struct signalfd_siginfo))
-            return signal_event{};
+            return event::signal{};
 
         ev.signal_no = siginfo.ssi_signo;
         ev.sender_pid = siginfo.ssi_pid;
@@ -55,7 +55,7 @@ namespace cppevents
         signal_fd = -1;
     }
 
-    template <> error_code add_source<cppevents::signal, int>(
+    template <> error_code add_source<cppevents::event::signal, int>(
         int signal,
         event_queue& queue)
     {
@@ -86,6 +86,20 @@ namespace cppevents
 
         queue.add_native_source(signal_fd, create_signal_event, delete_signal_event);
 
+        return error_code::success;
+    }
+
+
+    template <> error_code add_source<cppevents::source::unspecified, timer>(
+        timer& window,
+        event_queue& queue)
+    {
+        (void)window;
+        (void)queue;
+        /*
+        cppevents::native_source_type src = cppevents::get_sdl_event_source(window);
+        queue.add_native_source(src, cppevents::detail::create_sdl_event);
+        */
         return error_code::success;
     }
 }

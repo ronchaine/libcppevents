@@ -13,6 +13,7 @@
 namespace cppevents::source
 {
     using unspecified = void;
+    struct timer {};
 }
 
 namespace cppevents

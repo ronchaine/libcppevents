@@ -9,20 +9,16 @@
 
 #include "event_queue.hpp"
 
-namespace cppevents
+namespace cppevents::event
 {
-    struct signal_event
+    struct signal
     {
-        using group = void;
-
         int signal_no   = -1;
         int sender_pid  = -1;
         int sender_uid  = -1;
         int trap_no     = -1;
         int status      = -1;
     };
-
-    struct signal { using event_type = signal_event; };
 }
 
 #endif
